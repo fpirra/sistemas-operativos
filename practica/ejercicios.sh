@@ -109,6 +109,21 @@ function ej11 {
 	fi
 }
 
+function ej12 {
+	echo "Not implemented"
+}
+
+function ej13 {
+	for var in $@
+	do
+		if [ -f $var ]; then
+			cat $var
+		elif [ -d $var ]; then
+			ls $var
+		fi
+	done
+}
+
 
 if [ $# -eq 0 ]; then
 	sel="nada"
@@ -162,6 +177,10 @@ elif [ "$sel" == "11" ]; then
 		exit
 	fi
 	ej11 $2 $3 $4
+elif [ "$sel" == "12" ]; then
+	ej12
+elif [ "$sel" == "13" ]; then
+	ej13 $@
 else
 	echo "No selecciono ningun ejercicio."
 fi
