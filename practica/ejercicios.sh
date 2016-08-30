@@ -86,6 +86,19 @@ function ej9 {
 	sleep 30
 }
 
+function ej10 {
+	read n
+	for (( i=1; i <= $n; i++ ))
+	do
+		append=""
+		for (( j=1; j<= $i; j++ ))
+		do
+			append=$(echo $append $i)
+		done
+		echo $append
+	done
+}
+
 
 if [ $# -eq 0 ]; then
 	sel="nada"
@@ -131,6 +144,8 @@ elif [ "$sel" == "8" ]; then
 	ej8 $2
 elif [ "$sel" == "9" ]; then
 	ej9
+elif [ "$sel" == "10" ]; then
+	ej10
 else
 	echo "No selecciono ningun ejercicio."
 fi
