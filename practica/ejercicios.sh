@@ -49,6 +49,25 @@ function ej6 {
 	echo "Tardaste $cuenta intentos en adivinar el PID"
 }
 
+seguir=true
+trap ctrl_c INT
+
+function ctrl_c {
+	echo "** Trapped CTRL-C"
+	seguir=false
+}
+
+function ej7 {
+	while ( $seguir )
+	do
+		echo "verificando si existe prueba.txt"
+		if [ -f "prueba.txt" ]; then
+			echo "EXISTE!"
+		fi
+		sleep 30
+	done
+}
+
 
 if [ $# -eq 0 ]; then
 	sel="nada"
@@ -88,6 +107,8 @@ elif [ "$sel" == "5" ]; then
 	done
 elif [ "$sel" == "6" ]; then
 	ej6
+elif [ "$sel" == "7" ]; then
+	ej7
 else
 	echo "No selecciono ningun ejercicio."
 fi
