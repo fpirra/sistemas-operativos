@@ -99,6 +99,16 @@ function ej10 {
 	done
 }
 
+function ej11 {
+	if [ "$1" == "$2" -a "$2" == "$3" ]; then
+		echo "Las tres son iguales"
+	elif [ "$1" == "$2" -o "$1" == "$3" -o "$2" == "$3" ]; then
+		echo "Solo dos son iguales"
+	else
+		echo "Son las tres distintas"
+	fi
+}
+
 
 if [ $# -eq 0 ]; then
 	sel="nada"
@@ -146,6 +156,12 @@ elif [ "$sel" == "9" ]; then
 	ej9
 elif [ "$sel" == "10" ]; then
 	ej10
+elif [ "$sel" == "11" ]; then
+	if [ $# -ne 4 ]; then
+		echo "Se necesitan tres palabras"
+		exit
+	fi
+	ej11 $2 $3 $4
 else
 	echo "No selecciono ningun ejercicio."
 fi
