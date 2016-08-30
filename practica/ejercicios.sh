@@ -68,6 +68,14 @@ function ej7 {
 	done
 }
 
+function ej8 {
+	if [ ! -d $1 ]; then
+		echo "El argumento pasado no es un directorio. Saliendo..."
+		exit
+	fi
+	find $1 -type d
+}
+
 
 if [ $# -eq 0 ]; then
 	sel="nada"
@@ -109,6 +117,8 @@ elif [ "$sel" == "6" ]; then
 	ej6
 elif [ "$sel" == "7" ]; then
 	ej7
+elif [ "$sel" == "8" ]; then
+	ej8 $2
 else
 	echo "No selecciono ningun ejercicio."
 fi
