@@ -124,6 +124,27 @@ function ej13 {
 	done
 }
 
+function ej14 {
+	IFS=':'
+	encontrado=false
+	for i in $PATH
+	do
+		IFS='
+		'
+		for bin in $(ls $i)
+		do
+			if [ $bin == "$1" ]; then
+				echo "Comando $bin encontrado"
+				echo $(man $bin)
+				encontrado=true
+			fi
+		done
+		if [ $($encontrado) ]; then
+			break
+		fi
+	done
+}
+
 
 if [ $# -eq 0 ]; then
 	sel="nada"
@@ -181,6 +202,8 @@ elif [ "$sel" == "12" ]; then
 	ej12
 elif [ "$sel" == "13" ]; then
 	ej13 $@
+elif [ "$sel" == "14" ]; then
+	ej14 $2
 else
 	echo "No selecciono ningun ejercicio."
 fi
