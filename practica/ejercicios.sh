@@ -77,6 +77,16 @@ function ej8 {
 }
 
 
+function ej9 {
+	milis=$(date +"%s")
+	nombre=$(echo stop_proceso_$milis.sh)
+	pid=$$
+	echo -e "kill -15 $pid\nrm $nombre" > $nombre
+	chmod +x $nombre
+	sleep 30
+}
+
+
 if [ $# -eq 0 ]; then
 	sel="nada"
 else
@@ -119,6 +129,8 @@ elif [ "$sel" == "7" ]; then
 	ej7
 elif [ "$sel" == "8" ]; then
 	ej8 $2
+elif [ "$sel" == "9" ]; then
+	ej9
 else
 	echo "No selecciono ningun ejercicio."
 fi
