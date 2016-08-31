@@ -164,6 +164,17 @@ function ej15 {
 
 }
 
+function ej16 {
+	for arch in $@
+	do
+		# echo $arch
+		if [ -f $arch ]; then
+			echo "Archivo: $arch"
+			cat "$arch"
+		fi
+	done
+}
+
 
 if [ $# -eq 0 ]; then
 	sel="nada"
@@ -225,6 +236,8 @@ elif [ "$sel" == "14" ]; then
 	ej14 $2
 elif [ "$sel" == "15" ]; then
 	ej15 $@
+elif [ "$sel" == "16" ]; then
+	ej16 $@
 else
 	echo "No selecciono ningun ejercicio."
 fi
