@@ -191,12 +191,21 @@ function ej15 {
 function ej16 {
 	for arch in $@
 	do
-		# echo $arch
 		if [ -f $arch ]; then
 			echo "Archivo: $arch"
 			cat "$arch"
 		fi
 	done
+}
+
+function ej17 {
+	suma=0
+	for i in $@
+	do
+		suma=$(echo $suma + $i | bc)
+	done
+	promedio=$(echo $suma / $# | bc -l)
+	echo "El promedio de $@ es: " $promedio
 }
 
 
@@ -242,6 +251,8 @@ elif [ "$sel" == "15" ]; then
 	ej15 $@
 elif [ "$sel" == "16" ]; then
 	ej16 $@
+elif [ "$sel" == "17" ]; then
+	ej17 $@
 else
 	echo "No selecciono ningun ejercicio."
 fi
