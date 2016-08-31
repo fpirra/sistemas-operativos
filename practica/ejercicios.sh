@@ -145,6 +145,25 @@ function ej14 {
 	done
 }
 
+function ej15 {
+	for i in $@
+	do
+		if [ $i -lt 1 -o $i -gt 75 ]; then
+			echo "Numero $i no esta en el rango {1..75}. Saliendo..."
+			exit
+		fi
+	done
+	for i in $@
+	do
+		for (( j=1; j<= $i; j++ ))
+		do
+			echo -n "*"
+		done
+		echo
+	done
+
+}
+
 
 if [ $# -eq 0 ]; then
 	sel="nada"
@@ -204,6 +223,8 @@ elif [ "$sel" == "13" ]; then
 	ej13 $@
 elif [ "$sel" == "14" ]; then
 	ej14 $2
+elif [ "$sel" == "15" ]; then
+	ej15 $@
 else
 	echo "No selecciono ningun ejercicio."
 fi
