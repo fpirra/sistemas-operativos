@@ -28,6 +28,30 @@ function ej4 {
         fi
 }
 
+function ej5 {
+	fecha=$(date +"%Y-%m-%d")
+	lista=$(echo $fecha.lst)
+	# No puede existir el archivo.
+	if [ -f $lista ]; then
+		echo "Ya existe un archivo $lista. Saliendo..."
+		exit
+	fi
+	# Tienen que ser directorios todos.
+	for var in "$@"
+	do
+		if [ ! -d $var ]; then
+			echo "Un parametro ingresado no es un directorio. Saliendo..."
+			exit
+		fi
+	done
+	archivo=$(echo $fecha.tar.gz)
+	tar -czvf $archivo $@ #> /dev/null 2> /dev/null
+	for var in $@
+	do
+		echo $var >> $lista
+	done
+}
+
 function ej6 {
 	echo $$
 	adivino=false
@@ -191,27 +215,7 @@ elif [ "$sel" == "3" ]; then
 elif [ "$sel" == "4" ]; then
 	ej4 $2
 elif [ "$sel" == "5" ]; then
-	fecha=$(date +"%Y-%m-%d")
-	lista=$(echo $fecha.lst)
-	# No puede existir el archivo.
-	if [ -f $lista ]; then
-		echo "Ya existe un archivo $lista. Saliendo..."
-		exit
-	fi
-	# Tienen que ser directorios todos.
-	for var in "$@"
-	do
-		if [ ! -d $var ]; then
-			echo "Un parametro ingresado no es un directorio. Saliendo..."
-			exit
-		fi
-	done
-	archivo=$(echo $fecha.tar.gz)
-	tar -czvf $archivo $@ #> /dev/null 2> /dev/null
-	for var in $@
-	do
-		echo $var >> $lista
-	done
+	ej5 $@
 elif [ "$sel" == "6" ]; then
 	ej6
 elif [ "$sel" == "7" ]; then
