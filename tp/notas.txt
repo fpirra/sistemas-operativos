@@ -1,0 +1,390 @@
+                         ━━━━━━━━━━━━━━━━━━━━━
+                          NOTAS DEL ENUNCIADO
+
+                                SantiA.
+                         ━━━━━━━━━━━━━━━━━━━━━
+
+
+Table of Contents
+─────────────────
+
+1 Comandos:
+.. 1.1 INSTALEP
+.. 1.2 INITEP
+.. 1.3 DEMONEP
+.. 1.4 PROCEP
+.. 1.5 LISTEP
+.. 1.6 LOGEP
+.. 1.7 MOVEP
+2 Documentación
+.. 2.1 Para primer entrega:
+..... 2.1.1 Carátula.
+..... 2.1.2 índice
+..... 2.1.3 Aclaraciones e hipótesis
+..... 2.1.4 Problemas
+..... 2.1.5 README.
+..... 2.1.6 Listado de funciones EXTRA.
+..... 2.1.7 Listado de archivos *no temporales*
+..... 2.1.8 Listado de DATOS.
+..... 2.1.9 Apéndice
+..... 2.1.10 Enunciado del TP.
+3 Recomendaciones
+.. 3.1 Para el log:
+..... 3.1.1 Toda invocación desde un comando a otro debe devolver un código de retorno 0 si tuvo éxito y != 0 si tuvo errores.
+..... 3.1.2 Se deben logear todos lso errores del TP y mostrarlos por pantalla.
+.. 3.2 Hacer un archivo de configuración
+.. 3.3 Para el uso de los archivos de prueba de la cátedra
+4 Primer entrega:
+.. 4.1 INSTALEP
+..... 4.1.1 Paquete:
+..... 4.1.2 Instalador
+..... 4.1.3 Directorio de trabajo
+..... 4.1.4 Interacción con el usuario
+..... 4.1.5 Uso de /dirconf
+..... 4.1.6 LOG
+..... 4.1.7 Detectar sistema instalado
+..... 4.1.8 Nombres de los directorios
+..... 4.1.9 Espacio en el disco
+..... 4.1.10 Mostrar valores:
+..... 4.1.11 Volver atrás
+..... 4.1.12 Confirmar instalación
+..... 4.1.13 Instalación
+..... 4.1.14 Puntos 14 y 15 ver pág 10
+.. 4.2 INITEP
+.. 4.3 DEMONEP (por lo menos parcial)
+.. 4.4 LOGEP
+
+
+
+
+
+1 Comandos:
+═══════════
+
+1.1 INSTALEP
+────────────
+
+  Shell. Tiene que instalar el sistema.
+
+
+1.2 INITEP
+──────────
+
+  Configuración del entorno de ejecución
+
+
+1.3 DEMONEP
+───────────
+
+  Recepción de archivo de novedades
+
+
+1.4 PROCEP
+──────────
+
+  Determinación de imputación de gastos para cada partida presupuestaria
+
+
+1.5 LISTEP
+──────────
+
+  *PERL*. generación de listados y reportes de gestión
+
+
+1.6 LOGEP
+─────────
+
+  Shell || Perl. Para guardar Logs.
+
+
+1.7 MOVEP
+─────────
+
+  Shell || Perl. Para mover archivos.
+
+
+2 Documentación
+═══════════════
+
+2.1 Para primer entrega:
+────────────────────────
+
+2.1.1 Carátula.
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+
+2.1.2 índice
+╌╌╌╌╌╌╌╌╌╌╌╌
+
+
+2.1.3 Aclaraciones e hipótesis
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  Acá anotamaos todas las… hipótesis
+
+
+2.1.4 Problemas
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  Y sus soluciones
+
+
+2.1.5 README.
+╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  Con el paso a paso de la instalación y ejecución del TP.
+
+
+2.1.6 Listado de funciones EXTRA.
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+
+2.1.7 Listado de archivos *no temporales*
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  Si agregamos algo que no esté en el enunciado, poner el nombre, la
+  ubicación y quién lo usa y para qué.
+
+
+2.1.8 Listado de DATOS.
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  TOdos los archivos que nos da la cátedra.
+
+
+2.1.9 Apéndice
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+
+2.1.10 Enunciado del TP.
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+
+3 Recomendaciones
+═════════════════
+
+3.1 Para el log:
+────────────────
+
+3.1.1 Toda invocación desde un comando a otro debe devolver un código de retorno 0 si tuvo éxito y != 0 si tuvo errores.
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+
+3.1.2 Se deben logear todos lso errores del TP y mostrarlos por pantalla.
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+
+3.2 Hacer un archivo de configuración
+─────────────────────────────────────
+
+
+3.3 Para el uso de los archivos de prueba de la cátedra
+───────────────────────────────────────────────────────
+
+  Ser consistentes con el uso del primer registro (si se lo ignora o se
+  lo remueve) y aclararlo en las hipótesis Lo mismo para caracteres si
+  se modifican (tipo EOF o lo que sea)
+
+
+4 Primer entrega:
+═════════════════
+
+4.1 INSTALEP
+────────────
+
+4.1.1 Paquete:
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  Formato .tgz, es un .tar comprimido en .gzip
+
+
+◊ 4.1.1.1 El instalable tiene que contener:
+
+  • Documentación
+  • Scripts.
+  • Archivos de datos
+
+
+◊ 4.1.1.2 La extracción se genera en $GRUPO con un subdir llamado /dirconf
+
+
+◊ 4.1.1.3 Tener los datos de prueba en algún lugar
+
+
+◊ 4.1.1.4 Explicar bien en el README cómo descargar el paquete y demás
+
+  1. Cómo descargar
+  2. Cómo descomprimir
+  3. Qué se crea cuando se descomprime.
+
+
+4.1.2 Instalador
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+◊ 4.1.2.1 Cómo instalar
+
+
+◊ 4.1.2.2 qué pas acuando instalás
+
+
+◊ 4.1.2.3 Cómo ejecutar
+
+
+◊ 4.1.2.4 Cómo arrancar y detener comandos
+
+
+◊ 4.1.2.5 Cualquier otra indicación
+
+
+4.1.3 Directorio de trabajo
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+◊ 4.1.3.1 El directorio tiene que ser grupo9
+
+
+◊ 4.1.3.2 Todo el path va en $GRUPO. e.g. $HOME/sisop/grupo9
+
+
+◊ 4.1.3.3 Nada sale fuera de $GRUPO
+
+
+4.1.4 Interacción con el usuario
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+◊ 4.1.4.1 Siempre que se interactúa con el usuario proponer el valor por default mostrándolo e ntre paréntesis .
+
+  Ejemplo: Defina el directorio de ejecutables ($grupo/bin):
+
+
+◊ 4.1.4.2 Tiene que tener memoria de las cosas que ya decidió el usuario (por si se repite)
+
+
+4.1.5 Uso de /dirconf
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+◊ 4.1.5.1 Ya existe $GRUPO/dirconf
+
+  Usarlo.
+
+
+4.1.6 LOG
+╌╌╌╌╌╌╌╌╌
+
+◊ 4.1.6.1 El log de la instalación se hace en instalep.log dentro de /dirconf
+
+
+◊ 4.1.6.2 Grabar en log todos los mensaes por pantalla y los valores que ingresó el usuario
+
+
+◊ 4.1.6.3 Grabar en el log el mensaje:
+
+  Inicio del proceso. Usuario Fech a y Hora
+
+
+4.1.7 Detectar sistema instalado
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+◊ 4.1.7.1 Para detectar si ya está instalado tenemos que reconocer instalep.conf
+
+  Esta'en /dirconf. Si existe se asume que está instalado.
+
+
+◊ 4.1.7.2 Si ya está instalado mostrar el mensaje:
+
+  Directorio de Configuración: $GRUPO /dirconf (mostrar path y listar
+  archivos) Directorio de Ejecutables: ($GRUPO/ DIRBIN mostrar path y
+  listar archivos) Directorio de Maestros y Tablas: ($GRUPO/ DIRMAE
+  mostrar path y listar archivos) Di rectorio de Recepción de Novedades
+  : ($GRUPO/ DIRREC mostrar path) Directorio de Archivos Aceptados:
+  ($GRUPO/ DIROK mostrar path) Directorio de Archivos Procesados :
+  ($GRUPO/ DIRPROC mostrar path) Directorio de Archivos de Reportes :
+  ($GRUPO/ DIRINFO mostrar path) Directorio de Archivos de Log: ($GRUPO/
+  DIRLOG most rar path) Directorio de Archivos Rechazados: ($GRUPO/
+  DIRNOK mostrar path)
+
+
+4.1.8 Nombres de los directorios
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+◊ 4.1.8.1 Ejecutables
+
+  Mostrar y logear "Defina el direc torio de ejecutables ($grupo/bin):"
+  Y su respuesta. Guardar el resultado en $DIRBIN
+
+
+◊ 4.1.8.2 Maestros y tablas
+
+  Mostrar y logear "Defina el directorio de Maestros y Tablas ($grupo/
+  mae):" Proponer /mae
+
+
+◊ 4.1.8.3 El resto de los items de esta parte está todo en las páginas de la 7 a la 8.
+
+
+4.1.9 Espacio en el disco
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+◊ 4.1.9.1 Solicitar al usuario el espacio mínimo
+
+  Defina espacio mínimo libre para la recepción de archivos en Mbytes
+  (100): Guardar el resultado en $DATASIZE
+
+
+◊ 4.1.9.2 Chequear si hay espacio disponible requerido.
+
+  ◊ 4.1.9.2.1 Si no hay mostrar en log
+
+    Insuficiente espacio en disco. Espacio disponible: xx M b. Espacio
+    requerido $ DATASIZE Mb Inténtelo nuevamente. Volver a verificar
+    espacio en disco .
+
+
+  ◊ 4.1.9.2.2 Si hay suficiente espacio, mostrar y grabar en el log
+
+    Suficiente espacio en disco. Espacio disponible: xx Mb. Espacio
+    requerido $DATASIZE Mb De enter para conti nuar.
+
+
+4.1.10 Mostrar valores:
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  ver página 9 todos los logs y prompts
+
+
+4.1.11 Volver atrás
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+◊ 4.1.11.1 Limpia pantalla y vuelve atrás, esta vez los valores "por defecto" son los que el usuario ya eligió
+
+  Podemos guardar en memoria lso valores elegidos (no sirve reescribir
+  el archivo por default porque en la siguiente ejecución sino se
+  pierden lso datos)
+
+
+4.1.12 Confirmar instalación
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  Ver el pdf
+
+
+4.1.13 Instalación
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+  En la página 10 están todas las carpetas que deben existir luego de la
+  instalación.
+
+
+4.1.14 Puntos 14 y 15 ver pág 10
+╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌╌
+
+
+4.2 INITEP
+──────────
+
+
+4.3 DEMONEP (por lo menos parcial)
+──────────────────────────────────
+
+
+4.4 LOGEP
+─────────
