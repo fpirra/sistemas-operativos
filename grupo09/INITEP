@@ -1,0 +1,215 @@
+#!/bin/bash
+# Script para iniciar el sistema EPLAM
+
+OK=0
+ERROR=1
+
+# Funciones
+
+# $1: Mensaje a loguear ; $2: Tipo del mensaje
+function loguear {
+    $DIRBIN/LOGEP INITEP "$1" "$2"
+}
+
+# /Funciones
+
+# Verificar si el ambiente ya fue inicializado
+if [ ! -z "$DIRMAE" ] ; then
+    loguear "El ambiente ya fue inicializado. Para reiniciar termine la sesión y ejecute INITEP nuevamente." "WAR"
+    echo "El ambiente ya fue inicializado. Para reiniciar termine la sesión y ejecute INITEP nuevamente."
+    return $OK
+fi
+
+# Buscar path GRUPO
+while [ ! -f INSTALEP ] && [ $PWD != "/" ] ; do # Buscar INSTALEP
+    cd ..
+done
+
+# Si no se encontro INSTALEP salir
+if [ ! -f INSTALEP ] && [ $PWD == "/" ] ; then
+    echo "No se pudo encontrar INSTALEP en el directorio raíz. Descomprima el paquete de instalación nuevamente."
+    return $ERROR
+fi
+
+export GRUPO=$PWD # Tengo el directorio raiz
+export DIRCONF="$GRUPO/dirconf"
+
+# Verificar si existe el archivo de configuración
+if ! [ -d "$DIRCONF" ] ; then
+    echo "No existe directorio de configuración. Descomprima el paquete de instalación nuevamente."
+    return $ERROR
+fi
+if ! [ -f "$DIRCONF/INSTALEP.conf" ] ; then
+    echo "EPLAM no está adecuadamente instalado en el sistema. Ejecute INSTALEP."
+    return $ERROR
+fi
+
+# Cargo valores del archivo de configuracion
+export DIRBIN=`grep DIRBIN $CONFFILE | cut -d'=' -f2`
+export DIRMAE=`grep DIRMAE $CONFFILE | cut -d'=' -f2`
+export DIRREC=`grep DIRREC $CONFFILE | cut -d'=' -f2`
+export DIROK=`grep DIROK $CONFFILE | cut -d '=' -f2`
+export DIRPROC=`grep DIRPROC $CONFFILE | cut -d'=' -f2`
+export DIRINFO=`grep DIRINFO $CONFFILE | cut -d'=' -f2`
+export DIRLOG=`grep DIRLOG $CONFFILE | cut -d'=' -f2`
+export DIRNOK=`grep DIRNOK $CONFFILE | cut -d'=' -f2`
+cd "$DIRBIN"
+
+# Verificar instalacion completa
+estado_instalacion=COMPLETA
+faltantes_dirbin=()
+faltantes_dirmae=()
+faltantes_directorios=()
+
+if ! [ -d "$DIRBIN" ] ; then
+    faltantes_directorios+=("Ejecutables")
+else
+    # Verificar presencia de ejecutables
+    files_dirbin=$(ls "$DIRBIN")
+    files=("LOGEP" "INSTALEP" "INITEP" "DEMONEP")  # TODO agregar MOVEP, LISTEP, PROCEP para la segunda entrega
+    for file in ${files[@]} ; do
+        if [ `ls -1 | grep $file -c` -ne 1 ]; then
+            faltantes_dirbin+=("$file")
+        fi
+    done
+fi
+
+if ! [ -d "$DIRMAE" ] ; then
+    faltantes_directorios+=("Maestros")
+else
+    # Verificar presencia de maestros y tablas
+    files_dirmae=$(ls "$DIRMAE")
+    files=("tabla-AxC.csv" "provincias.csv" "trimestres.csv" "centros.csv" "actividades.csv")
+    for file in ${files[@]} ; do
+        if [ `ls -1 | grep $file -c` -ne 1 ]; then
+            faltantes_dirmae+=("$file")
+        fi
+    done
+fi
+
+if ! [ -d "$DIRINFO" ] ; then
+    faltantes_directorios+=("Novedades")
+fi
+if ! [ -d "$DIROK" ] ; then
+    faltantes_directorios+=("Aceptados")
+fi
+if ! [ -d "$DIRPROC" ] ; then
+    faltantes_directorios+=("Procesados")
+fi
+if ! [ -d "$DIRREC" ] ; then
+    faltantes_directorios+=("Reportes")
+fi
+if ! [ -d "$DIRLOG" ] ; then
+    faltantes_directorios+=("Logs")
+fi
+if ! [ -d "$DIRNOK" ] ; then
+    faltantes_directorios+=("Rechazados")
+fi
+
+if [ "$faltantes_dirbin" != "" ] || [ "$faltantes_dirmae" != "" ] || [ "$faltantes_directorios" != "" ] ; then
+    echo "La instalación de EPLAM no está completa."
+    echo
+    if [ "$faltantes_dirbin" != "" ] || [ "$faltantes_dirmae" != "" ] ; then
+        echo -n "Componentes faltantes: "
+        for elemento in ${faltantes_dirbin[@]} ; do
+            echo -n "$elemento "
+        done
+        for elemento in ${faltantes_dirmae[@]} ; do
+            echo -n "$elemento "
+        done
+        echo
+        echo "Para reparar esto debe ejecutar INSTALEP y seguir los pasos allí especificados."
+    fi
+    if [ "$faltantes_directorios" != "" ] ; then
+        echo -n "Directorios faltantes: "
+        for elemento in ${faltantes_directorios[@]} ; do
+            echo -n "$elemento "
+        done
+        echo
+        echo "Para reparar esto debe borrar el archivo \"INSTALEP.conf\" en el directorio $DIRCONF, y luego ejecutar INSTALEP para realizar la instalación de EPLAM  nuevamente."
+    fi
+    DIRMAE=""
+    return $ERROR
+fi
+
+# Verificar permisos
+ejecutables=("$DIRBIN/LOGEP" "$DIRBIN/INSTALEP" "$DIRBIN/INITEP" "$DIRBIN/DEMONEP")
+maestros=("tabla-AxC.csv" "provincias.csv" "trimestres.csv" "centros.csv" "actividades.csv")
+for file in ${ejecutables[@]} ; do
+    if [[ ! -x "$file" ] || [ ! -r "$file" ]] ; then
+        chmod +xr "$file"
+        if [[ ! -x "$file" ] || [ ! -r "$file" ]] ; then
+            loguear "No se pueden modificar los permisos del archivo $file." "ERR"
+            echo "No se pueden modificar los permisos del archivo $file."
+            return $ERROR
+        fi
+    fi
+done
+
+
+for file in ${maestros[@]} ; do
+    if [ ! -r "$file" ] ; then
+        chmod +r "$file"
+        if [ ! -r "$file" ] ; then
+            loguear "No se pueden modificar los permisos del archivo $file." "ERR"
+            echo "No se pueden modificar los permisos del archivo $file."
+            return $ERROR
+        fi
+    fi
+done
+
+# Inicializar ambiente
+echo "Directorio de configuración: $DIRCONF"
+archivos_dirconf=$(ls "$DIRCONF")
+loguear "Directorio de configuración: $DIRCONF $archivos_dirconf" "INFO"
+ls "$DIRCONF"
+echo
+echo "Directorio de ejecutables: $DIRBIN"
+archivos_dirbin=$(ls "$DIRBIN")
+loguear "Directorio de ejecutables: $DIRBIN $archivos_dirbin" "INFO"
+ls "$DIRBIN"
+echo
+echo "Directorio de maestros y tablas: $DIRMAE"
+archivos_dirmae=$(ls "$DIRMAE")
+loguear "Directorio de maestros y tablas: $DIRMAE $archivos_dirmae" "INFO"
+ls "$DIRMAE"
+echo
+loguear "Directorio de recepción de archivos de novedades: $DIRREC" "INFO"
+echo "Directorio de recepción de archivos de novedades: $DIRREC"
+echo
+loguear "Directorio de archivos de novedades aceptadas: $DIROK" "INFO"
+echo "Directorio de archivos de novedades aceptadas: $DIROK"
+echo
+loguear "Directorio de archivos de novedades rechazadas: $DIRNOK" "INFO"
+echo "Directorio de archivos de novedades rechazadas: $DIRNOK"
+echo
+loguear "Directorio de archivos de reportes de llamadas: $DIRINFO" "INFO"
+echo "Directorio de archivos de reportes de llamadas: $DIRINFO"
+echo
+echo "Directorio de archivos de log: $DIRLOG"
+archivos_dirlog=$(ls "$DIRLOG")
+loguear "Directorio de archivos de log: $DIRLOG $archivos_dirlog" "INFO"
+ls "$DIRLOG"
+echo
+loguear "Directorio de archivos rechazados: $DIRNOK" "INFO"
+echo "Directorio de archivos rechazados: $DIRNOK"
+echo
+loguear "Estado del sistema: INICIALIZADO" "INFO"
+echo "Estado del sistema: INICIALIZADO"
+echo
+export DIRMAE # El ambiente queda inicializado
+
+# Iniciar DEMONEP
+while [ "$opcion" != Si ] ; do
+    echo -n "¿Desea efectuar la activación de Demonep? Si – No"
+    read opcion
+    loguear "¿Desea efectuar la activación de Demonep? Si – No: $opcion" "INFO"
+    if [ -z "$opcion" ] ; then
+        opcion=Si # Por defecto se acepta
+    fi
+    if [ "$opcion" == No ] ; then
+        echo "Para ejecutar el demonio Demonep puede ejecutar el siguiente comando: ./DEMONEP "
+        return $OK
+    fi
+done
+$DIRBIN/DEMONEP
