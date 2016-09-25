@@ -10,8 +10,17 @@ fi
 
 WHERE=`echo $1 | rev | cut -d/ -f1 | rev | cut -d. -f1`
 LOGFILE="$DIRLOG/$WHERE.log" # Usa el nombre del comando como nombre de archivo
+if [ 'INSTALEP' = $WHERE ];
+then
+   LOGFILE="$DIRCONF/INSTALEP.log"
+fi
 
-WHY=$3
+if [ $# -eq 3 ]; then
+    WHY=$3
+else
+    WHY="INFO"
+fi
+
 WHO=$USER
 WHEN=`date "+%Y/%m/%d %T"`
 WHAT=$2
