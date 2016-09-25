@@ -1,0 +1,107 @@
+#!/bin/bash
+
+#TODO(tomas) Comentar esta linea
+GRUPO="."
+
+dir_maestros="$GRUPO"/mae/
+dir_novedades="$GRUPO"/nov/
+dir_rec="$GRUPO"/rec/
+
+function log {
+	# TODO(tomas) Invocar a la funcion del log
+	echo $1
+}
+
+function validar_ambiente {
+	# TODO(tomas) Realizar la validacion
+	# Misma validacion de initep.sh
+	# Copiar
+	echo "true"
+	#echo "false"
+}
+
+seguir=true
+trap ctrl_c INT
+
+function ctrl_c {
+	echo "Finalizando..."
+	seguir=false
+}
+
+function loop {
+	contador=1
+	while ( $seguir )
+	do
+		log "Demonep ciclo nro. $contador"
+		contador=$(( contador + 1 ))
+		IFS='
+		'
+		for archivo in $(ls $dir_rec)
+		do
+			valido="true"
+			log "Archivo detectado: $archivo"
+
+			# Validar que el archivo sea texto
+			if file "$dir_rec$archivo" | grep -vq text$; then
+				# Es Binario
+				log "Archivo rechazado, motivo no es un archivo de texto."
+				valido="false"
+			fi
+
+			# Validar que el archivo no este vacio
+			if [ ! -s "$dir_rec$archivo" ]; then
+				log "Archivo rechazado, motivo: archivo vacio."
+				valido="false"
+			fi
+
+			# Validar formato del archivo
+			# ejecutado_<año_presupuestario>_<cod_provincia>_<aniomesdia>.csv
+			# ejecutado_2016_1_20151222
+			formato_valido="true"
+			ejec=$(echo "$archivo" | cut -d_ -f1)
+			anio=$(echo "$archivo" | cut -d_ -f2)
+			codigo=$(echo "$archivo" | cut -d_ -f3)
+			fecha=$(echo "$archivo" | cut -d_ -f4 | cut -d. -f1)
+
+			if [ $ejec != "ejecutado" ]; then
+				formato_valido="false"
+				log "Archivo rechazado, motivo: formato de nombre incorrecto."
+			fi
+
+			if [ $anio != $(date +%Y) ]; then
+				formato_valido="false"
+				log "Archivo rechazado, motivo: año $anio incorrecto."
+			fi
+			cat "$dir_maestrosprovincias.csv" | grep -q $codigo
+			if [ $? -eq 1 ]; then
+				formato_valido="false"
+				log "Archivo rechazado, motivo: provincia $codigo incorrecta."
+			fi
+
+			# TODO(tomas) Validar el cuarto campo FECHA
+			#if [ $fecha ]; then
+			#	echo "fecha"
+			#fi
+
+			if [ $valido == "true" && $formato_valido == "true" ]; then
+				# TODO(tomas) llamar al movep DIRNOK
+				log "Archivo aceptado"
+			else
+				# TODO(tomas) llamar al movep DIROK
+			fi
+
+		done
+		sleep 300
+	done
+}
+
+# Cuerpo principal
+valido=$(validar_ambiente)
+if [ $valido == "false" ] ; then
+	echo "El ambiente no fue correctamente inicializado. Saliendo..."
+	exit
+fi
+
+loop
+
+
