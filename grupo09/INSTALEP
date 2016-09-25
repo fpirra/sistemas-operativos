@@ -1,0 +1,295 @@
+#!/bin/bash
+# Instalador del sistema EPLAM
+
+export GRUPO="$(cd -P -- "$(dirname -- "$0")" && pwd -P)" # Obtengo el directorio del script
+export DIRCONF="$GRUPO"/dirconf # Directorio del archivo de configuracion
+export LOGSIZE=5242882 # Tamanio maximo de 512kb, en bytes, para el archivo de log
+
+DIRBIN="$GRUPO"/bin
+DIRMAE="$GRUPO"/mae
+DIRREC="$GRUPO"/nov
+DIROK="$GRUPO"/ok
+DIRPROC="$GRUPO"/imp
+DIRINFO="$GRUPO"/rep
+DIRLOG="$GRUPO"/log
+DIRNOK="$GRUPO"/nok
+
+# Variables
+
+DATASIZE=100   # Para los 100Mb del espacio en disco que se chequea
+OK=0
+ERROR=1
+
+
+# Funciones
+
+# $1: Mensaje a loguear ; $2: Nivel de error
+function loguear {
+    $GRUPO/LOGEP INSTALEP "$1" "$2"
+}
+
+# $1: Variable donde guardar el valor ; $2: Mensaje a mostrar ; $3: Opcion por default
+function obtener_valor {
+    echo
+    echo -n -e "$2"
+    read opcion
+    if [ -z "$opcion" ] ; then
+        opcion="$3" # Opcion por default
+    fi
+    eval "$1='$opcion'"
+    loguear "$2""$opcion" "INFO"
+}
+
+# $1: Variable donde está el path ; $2: Path
+function normalizar_path {
+    if ! [[ "$2" =~ ^"$GRUPO".*$ ]] ; then # Si el path es relativo
+        local aux="$GRUPO/$2"
+        eval "$1='$aux'"
+    fi
+}
+
+# /Funciones
+
+# Verificar si existe directorio de configuracion
+if ! [ -d dirconf ] ; then
+    loguear "No existe el directorio de configuración." "ERR"
+    echo "No existe el directorio de configuración. Descomprima el paquete de instalación nuevamente."
+    exit $ERROR
+fi
+
+# Verificar si ya esta instalado
+if ! [ -f "$DIRCONF"/INSTALEP.conf ] ; then
+    # Hay que instalar
+
+    while [ "$opcion1" != Si ] ; do
+        obtener_valor opcion1 "***********************************************************\n*           Proceso de Instalación de \"EPLAM\"            *\n* Tema M - Grupo 9 - Segundo Cuatrimestre 2016 *\n***********************************************************\nA T E N C I O N: Al instalar UD. expresa aceptar los térmi-\nnos y condiciones del \"ACUERDO DE LICENCIA DE SOFTWARE\"\nincluido en este paquete.\n¿Acepta? (Si–No): " Si
+        if [ "$opcion1" == No ] ; then
+            exit $OK
+        fi
+    done
+
+    echo "\n\nPara el ingreso de Path, tener en cuenta que son relativos, por ejemplo para el siguiente Path \"$GRUPO/ejemplo\" se debe ingresar solamente \"ejecutables\"."
+
+    opcion_maestra=No
+    while [ "$opcion_maestra" == No ] ; do
+        obtener_valor DIRBIN "Defina el directorio de instalación de los ejecutables ($DIRBIN): " "$DIRBIN"
+        normalizar_path DIRBIN "$DIRBIN"
+
+        obtener_valor DIRMAE "Defina el directorio para maestros y tablas ($DIRMAE): " "$DIRMAE"
+        normalizar_path DIRMAE "$DIRMAE"
+
+        obtener_valor DIRREC "Defina el directorio de recepción de archivos de novedades ($DIRREC): " "$DIRREC"
+        normalizar_path DIRREC "$DIRREC"
+
+        disponible=`df -PBM . | awk 'NR==2 {print $4}'` # Obtengo el espacio disponible en disco
+        disponible="${disponible%?}" # Saco la M del final
+        datasize=INVALIDO
+        while ! [[ "$datasize" =~ ^[0-9]*$ ]] ; do # Repetir mientras no se ingrese un numero
+            obtener_valor datasize "Defina el espacio mínimo libre para la recepción de archivos de novedades en un número entero de MBytes ($DATASIZE): " $DATASIZE
+        done
+        while ! [[ "$disponible" -ge $datasize ]] ; do
+            loguear "Insuficiente espacio en disco. Espacio disponible: " $disponible "MB. Espacio requerido: " $datasize "MB." "ERR"
+            echo -e "Insuficiente espacio en disco.\n\nEspacio disponible: " $disponible "MB.\n\nEspacio requerido: " $datasize "MB.\n\nInténtelo nuevamente."
+            datasize=INVALIDO
+            while ! [[ "$datasize" =~ ^[0-9]*$ ]] ; do # Repetir mientras no se ingrese un numero
+                obtener_valor datasize "Defina el espacio mínimo libre para la recepción de archivos de novedades en un número entero de MBytes ($DATASIZE): " $DATASIZE
+            done
+        done
+        DATASIZE=$datasize
+
+        obtener_valor DIROK "Defina el directorio de grabación de los archivos de novedades aceptadas ($DIROK): " "$DIROK"
+        normalizar_path DIROK "$DIROK"
+
+        obtener_valor DIRPROC "Defina el directorio de grabación de los registros de novedades procesados ($DIRPROC): " "$DIRPROC"
+        normalizar_path DIRPROC "$DIRPROC"
+
+        obtener_valor DIRINFO "Defina el directorio de grabación de los reportes ($DIRINFO): " "$DIRINFO"
+        normalizar_path DIRINFO "$DIRINFO"
+
+        obtener_valor DIRLOG "Defina el directorio para los archivos de log ($DIRLOG): " "$DIRLOG"
+        normalizar_path DIRLOG "$DIRLOG"
+
+        obtener_valor DIRNOK "Defina el directorio de grabación de archivos rechazados ($DIRNOK): " "$DIRNOK"
+        normalizar_path DIRNOK "$DIRNOK"
+
+        # Informe de la configuracion elegida
+        opcion_maestra=A
+        clear
+        while [ "$opcion_maestra" != Si ] ; do
+            obtener_valor opcion_maestra "Directorio de ejecutables: $DIRBIN\n\nDirectorio de Maestros y Tablas: $DIRMAE\n\nDirectorio de recepción de archivos de novedades: $DIRREC\n\nEspacio mínimo libre para arribos: $DATASIZE MB\n\nDirectorio de archivos de novedades aceptados: $DIROK\n\nDirectorio de archivos de novedades procesados: $DIRPROC\n\nDirectorio de archivos de reportes de novedades: $DIRINFO\n\nDirectorio de archivos de log: $DIRLOG\n\nTamaño máximo para los archivos de log: $LOGSIZE Bytes\n\nDirectorio de archivos rechazados: $DIRNOK\n\nEstado de la instalación: LISTA\n\n¿Desea continuar con la instalación? (Si-No): " Si
+            if [ "$opcion_maestra" == No ] ; then
+                # Si elige que no, vuelvo atras y pregunto nuevamente las rutas
+                clear
+                break
+            fi
+        done
+
+    done
+
+
+    # Comenzar instalacion 
+    while [ "$opcion3" != Si ] ; do
+        obtener_valor opcion3 "Iniciando instalación. ¿Está Ud. seguro? (Si-No): " Si
+        if [ "$opcion3" == No ] ; then
+            exit $OK
+        fi
+    done
+
+    # Creacion de estructuras de directorio
+    loguear "Creando estructuras de directorio. . . ." "INFO"
+    echo "Creando estructuras de directorio. . . ."
+    mkdir -p "$DIRBIN";mkdir -p "$DIRMAE";mkdir -p "$DIRREC";mkdir -p "$DIROK";mkdir -p "$DIRPROC"/proc
+    mkdir -p "$DIRINFO";mkdir -p "$DIRLOG";mkdir -p "$DIRNOK"/nov
+
+
+    # TODO: IMPLEMENTAR MOVEP
+
+    # Mover ejecutables y funciones...  
+    loguear "Instalando programas y funciones. . . ." "INFO"
+    echo "Instalando programas y funciones. . . ."
+    cp "$GRUPO"/LOGEP "$DIRBIN"
+    cp "$GRUPO"/DEMONEP "$DIRBIN"
+    cp "$GRUPO"/INITEP "$DIRBIN"
+
+
+    # TODO: IMPLEMENTAR MOVEP
+    
+    # Mover archivos y tablas
+    loguear "Instalando archivos maestros y tablas. . . ." "INFO"
+    echo "Instalando archivos maestros y tablas. . . ."
+    cp "$GRUPO"/*.csv "$DIRMAE"
+
+    # Armar archivo de configuracion
+    loguear "Actualizando la configuración del sistema. . . ." "INFO"
+    echo "Actualizando la configuración del sistema. . . ."
+    echo 'GRUPO='"$GRUPO" >> "$DIRCONF/INSTALEP.conf"
+    echo 'DIRBIN='"$DIRBIN" >> "$DIRCONF/INSTALEP.conf"
+    echo 'DIRMAE='"$DIRMAE" >> "$DIRCONF/INSTALEP.conf"
+    echo 'DIRREC='"$DIRREC" >> "$DIRCONF/INSTALEP.conf"
+    echo 'DATASIZE='"$DATASIZE" >> "$DIRCONF/INSTALEP.conf"
+    echo 'DIROK='"$DIROK" >> "$DIRCONF/INSTALEP.conf"
+    echo 'DIRPROC='"$DIRPROC" >> "$DIRCONF/INSTALEP.conf"
+    echo 'DIRINFO='"$DIRINFO" >> "$DIRCONF/INSTALEP.conf"
+    echo 'DIRLOG='"$DIRLOG" >> "$DIRCONF/INSTALEP.conf"
+    echo 'LOGSIZE='"$LOGSIZE" >> "$DIRCONF/INSTALEP.conf"
+    echo 'DIRNOK='"$DIRNOK" >> "$DIRCONF/INSTALEP.conf"
+
+    # Instalacion finalizada
+
+    loguear "Instalación CONCLUIDA." "INFO"
+    echo "Instalación CONCLUIDA."
+
+    # BORRAR TEMPORALES
+
+    loguear "Fin del proceso. $(echo "$USER $(date +"%F %T")")" "INFO"
+    echo "Fin del proceso. $(echo "$USER $(date +"%F %T")")"
+    
+else
+    # Si ya se encuentra instalado
+    estado_instalacion=COMPLETA
+    faltantes_DIRBIN=()
+    faltantes_DIRMAE=()
+
+    # cargar variables del archivo de configuracion
+    DIRBIN=`grep DIRBIN "$DIRCONF"/INSTALEP.conf | cut -d '=' -f 2`
+    DIRMAE=`grep DIRMAE "$DIRCONF"/INSTALEP.conf | cut -d '=' -f 2`
+    DIRREC=`grep DIRREC "$DIRCONF"/INSTALEP.conf | cut -d '=' -f 2`
+    DIROK=`grep DIROK "$DIRCONF"/INSTALEP.conf | cut -d '=' -f 2`
+    DIRPROC=`grep DIRPROC "$DIRCONF"/INSTALEP.conf | cut -d '=' -f 2`
+    DIRINFO=`grep DIRINFO "$DIRCONF"/INSTALEP.conf | cut -d '=' -f 2`
+    DIRLOG=`grep DIRLOG "$DIRCONF"/INSTALEP.conf | cut -d '=' -f 2`
+    DIRNOK=`grep DIRNOK "$DIRCONF"/INSTALEP.conf | cut -d '=' -f 2`
+
+    echo "Directorio de configuración: $DIRCONF"
+    archivos_DIRCONF=$(ls "$DIRCONF")
+    loguear "Directorio de configuración: $DIRCONF $archivos_DIRCONF" "INFO"
+    ls "$DIRCONF"
+    echo
+
+    echo "Directorio de ejecutables: $DIRBIN"
+    archivos_DIRBIN=$(ls "$DIRBIN")
+    loguear "Directorio de ejecutables: $DIRBIN $archivos_DIRBIN" "INFO"
+    ls "$DIRBIN"
+
+    # Verificar presencia de ejecutables
+    archivos=("LOGEP" "DEMONEP" "INITEP")
+    for archivo in ${archivos[@]} ; do
+        if ! [[ "$archivos_DIRBIN" =~ (^|[[:space:]])"$archivo"($|[[:space:]]) ]] ; then
+            faltantes_DIRBIN+=("$archivo")
+        fi
+    done
+
+    echo
+    echo "Directorio de maestros y tablas: $DIRMAE"
+    archivos_DIRMAE=$(ls "$DIRMAE")
+    loguear "Directorio de maestros y tablas: $DIRMAE $archivos_DIRMAE" "INFO"
+    ls "$DIRMAE"
+
+    # Verificar presencia de maestros y tablas
+    archivos=("CdP.mae" "CdA.mae" "CdC.mae" "agentes.mae" "tllama.tab" "umbral.tab")
+    for archivo in ${archivos[@]} ; do
+        if ! [[ "$archivos_DIRMAE" =~ (^|[[:space:]])"$archivo"($|[[:space:]]) ]] ; then
+            faltantes_DIRMAE+=("$archivo")
+        fi
+    done
+
+    echo
+    loguear "Directorio de recepción de archivos de novedades: $DIRREC" "INFO"
+    echo "Directorio de recepción de archivos de novedades: $DIRREC"
+    echo
+    loguear "Directorio de archivos de novedades aceptadas: $DIROK" "INFO"
+    echo "Directorio de archivos de novedades aceptadas: $DIROK"
+    echo
+    loguear "Directorio de archivos de novedades procesados: $DIRPROC" "INFO"
+    echo "Directorio de archivos de novedades procesados: $DIRPROC"
+    echo
+    loguear "Directorio de archivos de reportes de novedades: $DIRINFO" "INFO"
+    echo "Directorio de archivos de reportes de novedades: $DIRINFO"
+    echo
+    echo "Directorio de archivos de log: $DIRLOG"
+    archivos_DIRLOG=$(ls "$DIRLOG")
+    loguear "Directorio de archivos de log: $DIRLOG $archivos_DIRLOG" "INFO"
+    ls "$DIRLOG"
+    echo
+    loguear "Directorio de archivos rechazados: $DIRNOK" "INFO"
+    echo "Directorio de archivos rechazados: $DIRNOK"
+    echo
+
+    if [ "$faltantes_DIRBIN" != "" ] || [ "$faltantes_DIRMAE" != "" ] ; then
+        estado_instalacion=INCOMPLETA
+    fi
+
+    loguear "Estado de la instalación: $estado_instalacion" "INFO"
+    echo "Estado de la instalación: $estado_instalacion"
+    echo
+    if [ $estado_instalacion == COMPLETA ] ; then
+        loguear "Proceso de instalación finalizado." "INFO"
+        echo "Proceso de instalación finalizado."
+    else
+        # Completar instalacion
+        echo -n "Componentes faltantes: "
+        for elemento in ${faltantes_DIRBIN[@]} ; do
+            echo -n "$elemento "
+        done
+        for elemento in ${faltantes_DIRMAE[@]} ; do
+            echo -n "$elemento "
+        done
+        echo
+        while [ "$opcion4" != Si ] ; do
+            obtener_valor opcion4 "¿Desea completar la instalación? (Si-No): " Si
+            if [ "$opcion4" == No ] ; then
+                exit $OK
+            fi
+        done
+
+        # Mover archivos faltantes
+        for elemento in ${faltantes_DIRBIN[@]} ; do
+            cp "$GRUPO/$elemento" "$DIRBIN"
+        done
+        for elemento in ${faltantes_DIRMAE[@]} ; do
+            cp "$GRUPO/$elemento" "$DIRMAE"
+        done
+
+    fi
+
+fi
