@@ -54,7 +54,7 @@ function normalizar_path {
 if ! [ -d dirconf ] ; then
     loguear "No existe el directorio de configuración." "ERR"
     echo "No existe el directorio de configuración. Descomprima el paquete de instalación nuevamente."
-    exit $ERROR
+    return $ERROR
 fi
 
 # Verificar si ya esta instalado
@@ -64,11 +64,11 @@ if ! [ -f "$DIRCONF"/INSTALEP.conf ] ; then
     while [ "$opcion1" != Si ] ; do
         obtener_valor opcion1 "***********************************************************\n*           Proceso de Instalación de \"EPLAM\"            *\n* Tema M - Grupo 9 - Segundo Cuatrimestre 2016 *\n***********************************************************\nA T E N C I O N: Al instalar UD. expresa aceptar los térmi-\nnos y condiciones del \"ACUERDO DE LICENCIA DE SOFTWARE\"\nincluido en este paquete.\n¿Acepta? (Si–No): " Si
         if [ "$opcion1" == No ] ; then
-            exit $OK
+            return $OK
         fi
     done
 
-    echo "\n\nPara el ingreso de Path, tener en cuenta que son relativos, por ejemplo para el siguiente Path \"$GRUPO/ejemplo\" se debe ingresar solamente \"ejecutables\"."
+    echo -e "\n\nPara el ingreso de Path, tener en cuenta que son relativos, por ejemplo para el siguiente Path \"$GRUPO/ejemplo\" se debe ingresar solamente \"ejecutables\"."
 
     opcion_maestra=No
     while [ "$opcion_maestra" == No ] ; do
@@ -127,11 +127,11 @@ if ! [ -f "$DIRCONF"/INSTALEP.conf ] ; then
     done
 
 
-    # Comenzar instalacion 
+    # Comenzar instalacion
     while [ "$opcion3" != Si ] ; do
         obtener_valor opcion3 "Iniciando instalación. ¿Está Ud. seguro? (Si-No): " Si
         if [ "$opcion3" == No ] ; then
-            exit $OK
+            return $OK
         fi
     done
 
@@ -183,7 +183,7 @@ if ! [ -f "$DIRCONF"/INSTALEP.conf ] ; then
 
     loguear "Fin del proceso. $(echo "$USER $(date +"%F %T")")" "INFO"
     echo "Fin del proceso. $(echo "$USER $(date +"%F %T")")"
-    
+
 else
     # Si ya se encuentra instalado
     estado_instalacion=COMPLETA
@@ -278,7 +278,7 @@ else
         while [ "$opcion4" != Si ] ; do
             obtener_valor opcion4 "¿Desea completar la instalación? (Si-No): " Si
             if [ "$opcion4" == No ] ; then
-                exit $OK
+                return $OK
             fi
         done
 

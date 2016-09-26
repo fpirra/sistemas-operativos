@@ -44,6 +44,8 @@ if ! [ -f "$DIRCONF/INSTALEP.conf" ] ; then
     return $ERROR
 fi
 
+CONFFILE="$DIRCONF/INSTALEP.conf"
+
 # Cargo valores del archivo de configuracion
 export DIRBIN=`grep DIRBIN $CONFFILE | cut -d'=' -f2`
 export DIRMAE=`grep DIRMAE $CONFFILE | cut -d'=' -f2`
@@ -81,7 +83,7 @@ else
     files_dirmae=$(ls "$DIRMAE")
     files=("tabla-AxC.csv" "provincias.csv" "trimestres.csv" "centros.csv" "actividades.csv")
     for file in ${files[@]} ; do
-        if [ `ls -1 | grep $file -c` -ne 1 ]; then
+        if [ `ls -l $DIRMAE | grep $file -c` -ne 1 ]; then
             faltantes_dirmae+=("$file")
         fi
     done
@@ -134,11 +136,11 @@ fi
 
 # Verificar permisos
 ejecutables=("$DIRBIN/LOGEP" "$DIRBIN/INITEP" "$DIRBIN/DEMONEP")
-maestros=("tabla-AxC.csv" "provincias.csv" "trimestres.csv" "centros.csv" "actividades.csv")
+maestros=("$DIRMAE/tabla-AxC.csv" "$DIRMAE/provincias.csv" "$DIRMAE/trimestres.csv" "$DIRMAE/centros.csv" "$DIRMAE/actividades.csv")
 for file in ${ejecutables[@]} ; do
-    if [[ ! -x "$file" ] || [ ! -r "$file" ]] ; then
+    if [ ! -x "$file" ] || [ ! -r "$file" ] ; then
         chmod +xr "$file"
-        if [[ ! -x "$file" ] || [ ! -r "$file" ]] ; then
+        if [ ! -x "$file" ] || [ ! -r "$file" ] ; then
             loguear "No se pueden modificar los permisos del archivo $file." "ERR"
             echo "No se pueden modificar los permisos del archivo $file."
             return $ERROR
@@ -200,14 +202,14 @@ echo
 export DIRMAE # El ambiente queda inicializado
 
 # Iniciar DEMONEP
-while [ "$opcion" != Si ] ; do
-    echo -n "¿Desea efectuar la activación de Demonep? Si – No"
+while [ "$opcion" != "Si" ] ; do
+    echo -n "¿Desea efectuar la activación de Demonep? Si – No: "
     read opcion
     loguear "¿Desea efectuar la activación de Demonep? Si – No: $opcion" "INFO"
     if [ -z "$opcion" ] ; then
-        opcion=Si # Por defecto se acepta
+        opcion="Si" # Por defecto se acepta
     fi
-    if [ "$opcion" == No ] ; then
+    if [ "$opcion" == "No" ] ; then
         echo "Para ejecutar el demonio Demonep puede ejecutar el siguiente comando: ./DEMONEP "
         return $OK
     fi
