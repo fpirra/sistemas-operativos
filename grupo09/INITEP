@@ -13,10 +13,6 @@ function loguear {
 
 # /Funciones
 
-if [ $DIRBIN=="" ]; then
-    echo "No se pudo encontrar el directorio de binarios. Descomprima el paquete de instalación nuevamente."
-    return
-fi
 
 # Verificar si el ambiente ya fue inicializado
 if [ ! -z "$DIRMAE" ] ; then
