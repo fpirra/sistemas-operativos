@@ -1,7 +1,8 @@
 #!/bin/bash
 # Instalador del sistema EPLAM
 
-export GRUPO="$(cd -P -- "$(dirname -- "$0")" && pwd -P)" # Obtengo el directorio del script
+export GRUPO="$(pwd -P)" # Obtengo el directorio del script
+cd $GRUPO
 export DIRCONF="$GRUPO"/dirconf # Directorio del archivo de configuracion
 export LOGSIZE=5242882 # Tamanio maximo de 512kb, en bytes, para el archivo de log
 
