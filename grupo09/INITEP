@@ -1,6 +1,5 @@
 #!/bin/bash
 # Script para iniciar el sistema EPLAM
-
 OK=0
 ERROR=1
 
@@ -8,14 +7,13 @@ ERROR=1
 
 # $1: Mensaje a loguear ; $2: Tipo del mensaje
 function loguear {
-    $DIRBIN/LOGEP INITEP "$1" "$2"
+    $GRUPO/LOGEP INITEP "$1" "$2"
 }
 
 # /Funciones
 
-
 # Verificar si el ambiente ya fue inicializado
-if [ ! -z "$DIRMAE" ] ; then
+if [ ! -z "$VAR_INITEP" ] ; then
     loguear "El ambiente ya fue inicializado. Para reiniciar termine la sesión y ejecute INITEP nuevamente." "WAR"
     echo "El ambiente ya fue inicializado. Para reiniciar termine la sesión y ejecute INITEP nuevamente."
     return $OK
@@ -56,6 +54,7 @@ export DIRPROC=`grep DIRPROC $CONFFILE | cut -d'=' -f2`
 export DIRINFO=`grep DIRINFO $CONFFILE | cut -d'=' -f2`
 export DIRLOG=`grep DIRLOG $CONFFILE | cut -d'=' -f2`
 export DIRNOK=`grep DIRNOK $CONFFILE | cut -d'=' -f2`
+
 cd "$DIRBIN"
 
 # Verificar instalacion completa
@@ -200,9 +199,10 @@ echo
 loguear "Estado del sistema: INICIALIZADO" "INFO"
 echo "Estado del sistema: INICIALIZADO"
 echo
-export DIRMAE # El ambiente queda inicializado
+VAR_INITEP="HECHO" # El ambiente queda inicializado
 
 # Iniciar DEMONEP
+opcion=""
 while [ "$opcion" != "Si" ] ; do
     echo -n "¿Desea efectuar la activación de Demonep? Si – No: "
     read opcion
@@ -211,8 +211,9 @@ while [ "$opcion" != "Si" ] ; do
         opcion="Si" # Por defecto se acepta
     fi
     if [ "$opcion" == "No" ] ; then
-        echo "Para ejecutar el demonio Demonep puede ejecutar el siguiente comando: ./DEMONEP "
+        echo "Para ejecutar el demonio Demonep puede ejecutar el siguiente comando: ./DEMONEP &"
         return $OK
     fi
 done
-$DIRBIN/DEMONEP
+$DIRBIN/DEMONEP &
+echo "Ejecutado DEMONEP con Process ID (PID): $!"

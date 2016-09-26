@@ -1,8 +1,6 @@
 #!/bin/bash
 
-dir_maestros="$GRUPO"/mae/
-dir_novedades="$GRUPO"/nov/
-dir_rec="$GRUPO"/rec/
+DIRREC="$GRUPO"/rec/
 
 # $1: Mensaje a loguear ; $2: Tipo del mensaje
 function log {
@@ -25,20 +23,20 @@ function loop {
 		contador=$(( contador + 1 ))
 		IFS='
 		'
-		for archivo in $(ls $dir_rec)
+		for archivo in $(ls $DIRREC)
 		do
 			valido="true"
 			log "Archivo detectado: $archivo" "INFO"
 
 			# Validar que el archivo sea texto
-			if file "$dir_rec$archivo" | grep -vq text$; then
+			if file "$DIRREC$archivo" | grep -vq text$; then
 				# Es Binario
 				log "Archivo rechazado, motivo no es un archivo de texto." "INFO"
 				valido="false"
 			fi
 
 			# Validar que el archivo no este vacio
-			if [ ! -s "$dir_rec$archivo" ]; then
+			if [ ! -s "$DIRREC$archivo" ]; then
 				log "Archivo rechazado, motivo: archivo vacio." "INFO"
 				valido="false"
 			fi
@@ -61,18 +59,24 @@ function loop {
 				formato_valido="false"
 				log "Archivo rechazado, motivo: año $anio incorrecto." "INFO"
 			fi
-			cat "$dir_maestrosprovincias.csv" | grep -q $codigo
+			cat "$DIRMAE/provincias.csv" | grep -q $codigo
 			if [ $? -eq 1 ]; then
 				formato_valido="false"
 				log "Archivo rechazado, motivo: provincia $codigo incorrecta." "INFO"
 			fi
 
-			# TODO(tomas) Validar el cuarto campo FECHA
-			#if [ $fecha ]; then
-			#	echo "fecha"
-			#fi
+			if [ $fecha ]; then
+				# Regex compleja. Lo que hago es convertir el formato de aaaammdd a mm/dd/aaaa para poder validar con date
+				# TODO(tomas) Ver si se puede sacar el cuarto argumento
+				formato_pedido=$(echo $fecha | sed 's/\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)\([0-9]*\)/\2\/\3\/\1\4/')
+				date "+%m/%d/%Y" -d $formato_pedido > /dev/null  2>&1
+ 				if [ $? -ne 0 ]; then
+ 					formato_valido="false"
+ 					log "Archivo rechazado, motivo: fecha $fecha incorrecta." "INFO"
+ 				fi
+			fi
 
-			if [ $valido == "true" && $formato_valido == "true" ]; then
+			if [ $valido == "true" ] && [ $formato_valido == "true" ]; then
 				# TODO(tomas) llamar al movep DIRNOK
 				log "Archivo aceptado" "INFO"
 			else
@@ -81,7 +85,7 @@ function loop {
 			fi
 
 		done
-		sleep 300
+		sleep 30
 	done
 }
 
