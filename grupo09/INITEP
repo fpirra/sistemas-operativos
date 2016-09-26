@@ -66,7 +66,7 @@ if ! [ -d "$DIRBIN" ] ; then
 else
     # Verificar presencia de ejecutables
     files_dirbin=$(ls "$DIRBIN")
-    files=("LOGEP" "INSTALEP" "INITEP" "DEMONEP")  # TODO agregar MOVEP, LISTEP, PROCEP para la segunda entrega
+    files=("LOGEP" "INITEP" "DEMONEP")  # TODO agregar MOVEP, LISTEP, PROCEP para la segunda entrega
     for file in ${files[@]} ; do
         if [ `ls -1 | grep $file -c` -ne 1 ]; then
             faltantes_dirbin+=("$file")
@@ -133,7 +133,7 @@ if [ "$faltantes_dirbin" != "" ] || [ "$faltantes_dirmae" != "" ] || [ "$faltant
 fi
 
 # Verificar permisos
-ejecutables=("$DIRBIN/LOGEP" "$DIRBIN/INSTALEP" "$DIRBIN/INITEP" "$DIRBIN/DEMONEP")
+ejecutables=("$DIRBIN/LOGEP" "$DIRBIN/INITEP" "$DIRBIN/DEMONEP")
 maestros=("tabla-AxC.csv" "provincias.csv" "trimestres.csv" "centros.csv" "actividades.csv")
 for file in ${ejecutables[@]} ; do
     if [[ ! -x "$file" ] || [ ! -r "$file" ]] ; then
