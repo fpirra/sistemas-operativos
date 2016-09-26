@@ -1,8 +1,5 @@
 #!/bin/bash
 
-#TODO(tomas) Comentar esta linea
-GRUPO="."
-
 dir_maestros="$GRUPO"/mae/
 dir_novedades="$GRUPO"/nov/
 dir_rec="$GRUPO"/rec/
@@ -10,14 +7,6 @@ dir_rec="$GRUPO"/rec/
 # $1: Mensaje a loguear ; $2: Tipo del mensaje
 function log {
     $DIRBIN/LOGEP INITEP "$1" "$2"
-}
-
-function validar_ambiente {
-	# TODO(tomas) Realizar la validacion
-	# Misma validacion de initep.sh
-	# Copiar
-	echo "true"
-	#echo "false"
 }
 
 seguir=true
@@ -97,12 +86,9 @@ function loop {
 }
 
 # Cuerpo principal
-valido=$(validar_ambiente)
-if [ $valido == "false" ] ; then
-	echo "El ambiente no fue correctamente inicializado. Saliendo..."
-	exit
+if ! [ -f "$DIRCONF/INSTALEP.conf" ] ; then
+    echo "EPLAM no está adecuadamente instalado en el sistema. Ejecute INSTALEP."
+    return $ERROR
 fi
 
 loop
-
-
