@@ -5,6 +5,18 @@ Para descomprimir hacer
 ```
 tar -xvf grupo09.tgz
 ```
+Esto generara la carpeta grupo09 con todos los archivos necesarios para comenzar la instalacion.
+
+Ingresar a la carpeta ejecutando:
+```
+cd grupo09
+```
+
+IMPORTANTE! EJECUTAR TODOS LOS SCRIPTS EN LA MISMA SESION DE BASH, NO GENERAR UNA NUEVA TERMINAL
+Por ejemplo, si tengo un script ejemplo.sh, se debe ejecutar
+```
+. ./ejemplo.sh
+```
 
 # TODO BORRAR
 Para generar un paquete de compresión, parados en sistemas-operativos hacer
