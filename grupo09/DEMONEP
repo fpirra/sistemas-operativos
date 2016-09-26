@@ -67,8 +67,7 @@ function loop {
 
 			if [ $fecha ]; then
 				# Regex compleja. Lo que hago es convertir el formato de aaaammdd a mm/dd/aaaa para poder validar con date
-				# TODO(tomas) Ver si se puede sacar el cuarto argumento
-				formato_pedido=$(echo $fecha | sed 's/\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)\([0-9]*\)/\2\/\3\/\1\4/')
+				formato_pedido=$(echo $fecha | sed 's/\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)/\2\/\3\/\1/')
 				date "+%m/%d/%Y" -d $formato_pedido > /dev/null  2>&1
  				if [ $? -ne 0 ]; then
  					formato_valido="false"
