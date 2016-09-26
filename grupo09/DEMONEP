@@ -7,9 +7,9 @@ dir_maestros="$GRUPO"/mae/
 dir_novedades="$GRUPO"/nov/
 dir_rec="$GRUPO"/rec/
 
+# $1: Mensaje a loguear ; $2: Tipo del mensaje
 function log {
-	# TODO(tomas) Invocar a la funcion del log
-	echo $1
+    $DIRBIN/LOGEP INITEP "$1" "$2"
 }
 
 function validar_ambiente {
@@ -32,25 +32,25 @@ function loop {
 	contador=1
 	while ( $seguir )
 	do
-		log "Demonep ciclo nro. $contador"
+		log "Demonep ciclo nro. $contador" "INFO"
 		contador=$(( contador + 1 ))
 		IFS='
 		'
 		for archivo in $(ls $dir_rec)
 		do
 			valido="true"
-			log "Archivo detectado: $archivo"
+			log "Archivo detectado: $archivo" "INFO"
 
 			# Validar que el archivo sea texto
 			if file "$dir_rec$archivo" | grep -vq text$; then
 				# Es Binario
-				log "Archivo rechazado, motivo no es un archivo de texto."
+				log "Archivo rechazado, motivo no es un archivo de texto." "INFO"
 				valido="false"
 			fi
 
 			# Validar que el archivo no este vacio
 			if [ ! -s "$dir_rec$archivo" ]; then
-				log "Archivo rechazado, motivo: archivo vacio."
+				log "Archivo rechazado, motivo: archivo vacio." "INFO"
 				valido="false"
 			fi
 
@@ -65,17 +65,17 @@ function loop {
 
 			if [ $ejec != "ejecutado" ]; then
 				formato_valido="false"
-				log "Archivo rechazado, motivo: formato de nombre incorrecto."
+				log "Archivo rechazado, motivo: formato de nombre incorrecto." "INFO"
 			fi
 
 			if [ $anio != $(date +%Y) ]; then
 				formato_valido="false"
-				log "Archivo rechazado, motivo: año $anio incorrecto."
+				log "Archivo rechazado, motivo: año $anio incorrecto." "INFO"
 			fi
 			cat "$dir_maestrosprovincias.csv" | grep -q $codigo
 			if [ $? -eq 1 ]; then
 				formato_valido="false"
-				log "Archivo rechazado, motivo: provincia $codigo incorrecta."
+				log "Archivo rechazado, motivo: provincia $codigo incorrecta." "INFO"
 			fi
 
 			# TODO(tomas) Validar el cuarto campo FECHA
@@ -85,9 +85,10 @@ function loop {
 
 			if [ $valido == "true" && $formato_valido == "true" ]; then
 				# TODO(tomas) llamar al movep DIRNOK
-				log "Archivo aceptado"
+				log "Archivo aceptado" "INFO"
 			else
 				# TODO(tomas) llamar al movep DIROK
+				log "Archivo rechazado" "INFO"
 			fi
 
 		done
