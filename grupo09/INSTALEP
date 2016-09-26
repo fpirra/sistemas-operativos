@@ -142,9 +142,8 @@ if ! [ -f "$DIRCONF"/INSTALEP.conf ] ; then
     mkdir -p "$DIRINFO";mkdir -p "$DIRLOG";mkdir -p "$DIRNOK"/nov
 
 
-    # TODO: IMPLEMENTAR MOVEP
 
-    # Mover ejecutables y funciones...  
+    # Mover ejecutables y funciones...
     loguear "Instalando programas y funciones. . . ." "INFO"
     echo "Instalando programas y funciones. . . ."
     cp "$GRUPO"/LOGEP "$DIRBIN"
@@ -152,12 +151,13 @@ if ! [ -f "$DIRCONF"/INSTALEP.conf ] ; then
     cp "$GRUPO"/INITEP "$DIRBIN"
 
 
-    # TODO: IMPLEMENTAR MOVEP
-    
     # Mover archivos y tablas
     loguear "Instalando archivos maestros y tablas. . . ." "INFO"
     echo "Instalando archivos maestros y tablas. . . ."
-    cp "$GRUPO"/*.csv "$DIRMAE"
+    maestros=("tabla-AxC.csv" "provincias.csv" "trimestres.csv" "centros.csv" "actividades.csv")
+    for file in ${maestros[@]} ; do
+        cp $GRUPO/Datos/$file $DIRMAE
+    done
 
     # Armar archivo de configuracion
     loguear "Actualizando la configuración del sistema. . . ." "INFO"
