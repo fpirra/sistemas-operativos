@@ -3,16 +3,18 @@
 # Invocación: LOGEP COMMAND MESSAGE ERRLVL
 # E.g.: LOGEP $0 'Error en el archivo' 'ERR'
 
-if [ -z $DIRLOG ] ;
-then
-    echo "No existe DIRLOG"
-fi
-
 WHERE=`echo $1 | rev | cut -d/ -f1 | rev | cut -d. -f1`
 LOGFILE="$DIRLOG/$WHERE.log" # Usa el nombre del comando como nombre de archivo
 if [ 'INSTALEP' = $WHERE ];
 then
    LOGFILE="$DIRCONF/INSTALEP.log"
+fi
+
+if [ ! -f $LOGFILE ]; then
+    touch $LOGFILE
+    if [ ! -f $LOGFILE ]; then
+        echo "No existe el archivo $LOGFILE y no se puede generar"
+    fi
 fi
 
 if [ $# -eq 3 ]; then
