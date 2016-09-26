@@ -43,4 +43,4 @@ then
     mv $TMPFILE $LOGFILE
 fi
 
-echo "$WHO $WHEN $WHERE $WHAT $WHY" >> $LOGFILE
+echo -e "$WHO $WHEN $WHERE [$WHY] $WHAT" >> $LOGFILE
