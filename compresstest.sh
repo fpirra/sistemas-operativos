@@ -1,4 +1,4 @@
-rm -r tmp
+rm -rf tmp
 mkdir tmp
 tar zcvf tmp/g.tar.gz grupo09
 cd tmp

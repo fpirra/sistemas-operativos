@@ -150,6 +150,7 @@ if ! [ -f "$DIRCONF"/INSTALEP.conf ] ; then
     cp "$GRUPO"/LOGEP "$DIRBIN"
     cp "$GRUPO"/DEMONEP "$DIRBIN"
     cp "$GRUPO"/INITEP "$DIRBIN"
+    cp "$GRUPO"/MOVEP "$DIRBIN"
 
 
     # Mover archivos y tablas
@@ -174,6 +175,7 @@ if ! [ -f "$DIRCONF"/INSTALEP.conf ] ; then
     echo 'DIRLOG='"$DIRLOG" >> "$DIRCONF/INSTALEP.conf"
     echo 'LOGSIZE='"$LOGSIZE" >> "$DIRCONF/INSTALEP.conf"
     echo 'DIRNOK='"$DIRNOK" >> "$DIRCONF/INSTALEP.conf"
+    echo 'SECUENCIA='"1" >> "$DIRCONF/INSTALEP.conf"
 
     # Instalacion finalizada
 
@@ -213,7 +215,7 @@ else
     ls "$DIRBIN"
 
     # Verificar presencia de ejecutables
-    archivos=("LOGEP" "DEMONEP" "INITEP")
+    archivos=("LOGEP" "DEMONEP" "INITEP" "MOVEP")
     for archivo in ${archivos[@]} ; do
         if ! [[ "$archivos_DIRBIN" =~ (^|[[:space:]])"$archivo"($|[[:space:]]) ]] ; then
             faltantes_DIRBIN+=("$archivo")

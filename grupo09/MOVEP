@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# Invocación: LOGEP COMMAND MESSAGE ERRLVL
+# E.g.: MOVEP rec/archivo ok/
+# E.g.: MOVEP rec/archivo ok/ DEMONEP
+
+function loguear {
+    $GRUPO/LOGEP MOVEP "$1" "$2"
+}
+
+if [ $# -ne 2 ] && [ $# -ne 3 ]; then
+    echo -e "Invocación incorrecta.\nUso: MOVEP 'origen' 'destino' ['comando']"
+    return
+fi
+
+if [ "$1" == "$2" ]; then
+    loguear "Origen y destino para mover el archivo son iguales" "ERR"
+    echo "Origen y destino para mover el archivo son iguales"
+    return
+fi
+
+if [ ! -f "$1" ]; then
+    loguear "El archivo origen no existe" "ERR"
+    echo "El archivo origen no existe"
+    return
+fi
+
+if [ ! -d "$2" ]; then
+    loguear "El directorio destino no existe" "ERR"
+    echo "El directorio destino no existe"
+    return
+fi
+
+file_destino=$(echo $1 | rev | cut -d/ -f1 | rev)
+if [ -f "$2"/$file_destino ]; then
+    if [ ! -d "$2/dpl" ]; then
+        mkdir $2/dpl
+    fi
+    file_destino=$(echo dpl/$file_destino)
+    n=""
+    if [ -f "$2"/$file_destino ]; then
+        n=$(cat $DIRCONF/INSTALEP.conf | grep "SECUENCIA" | cut -d= -f2)
+        next=$((n + 1))
+        sed -i -e "s/SECUENCIA=[0-9]*/SECUENCIA=$next/g" $DIRCONF/INSTALEP.conf
+    fi
+    file_destino=$(echo $file_destino$n)
+fi
+
+mv $1 $2/$file_destino
+if [ $# -eq 3 ]; then
+    loguear "[$3] Movido archivo desde $1 a $2/$file_destino" "INFO" $3
+fi
