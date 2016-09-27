@@ -216,4 +216,4 @@ while [ "$opcion" != "Si" ] ; do
     fi
 done
 . $DIRBIN/DEMONEP &
-echo "Ejecutado DEMONEP con Process ID (PID): $!"
+echo "Demonep corriendo bajo el no.: $!"
