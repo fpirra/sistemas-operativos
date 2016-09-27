@@ -1,10 +1,8 @@
 #!/bin/bash
 
-DIRREC="$GRUPO"/rec/
-
 # $1: Mensaje a loguear ; $2: Tipo del mensaje
 function log {
-    $DIRBIN/LOGEP INITEP "$1" "$2"
+    $DIRBIN/LOGEP DEMONEP "$1" "$2"
 }
 
 seguir=true
@@ -76,11 +74,11 @@ function loop {
 			fi
 
 			if [ $valido == "true" ] && [ $formato_valido == "true" ]; then
-				# TODO(tomas) llamar al movep DIRNOK
 				log "Archivo aceptado" "INFO"
+				./MOVEP $DIRREC$archivo $DIROK DEMONEP
 			else
-				# TODO(tomas) llamar al movep DIROK
 				log "Archivo rechazado" "INFO"
+				./MOVEP $DIRREC$archivo $DIRNOK DEMONEP
 			fi
 
 		done
