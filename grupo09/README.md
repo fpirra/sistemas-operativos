@@ -15,7 +15,7 @@ Los requisitos para poder utilizar el sistema son:
 * Bash (Bourne Shell)
 * Comandos: CAT, SED
 
-** Pasos para instalar el sistema **
+**Pasos para instalar el sistema**
 Ingresar a la carpeta ejecutando:
 ```
 cd grupo09
@@ -28,16 +28,16 @@ Por ejemplo, si tengo un script ejemplo.sh, se debe ejecutar
 ```
 La instalación se realiza mediante la ejecución ordenada de los siguientes scripts:
 
-* 1) INSTALEP
+* INSTALEP - Instalación
 ```
 . ./INSTALEP
 ```
-* 2) INITEP
+* INITEP - Configuración de variables de entorno
 ```
 . ./INITEP
 ```
 A partir de aquí, el sistema ya se encuentra instalado y se puede iniciar el proceso demonio DEMONEP
-* 3) DEMONEP
+* DEMONEP - Proceso demonio que recibe archivos, los valida y los mueve de carpetas
 ```
 . ./DEMONEP &
 ```
