@@ -27,14 +27,14 @@ function loop {
 			log "Archivo detectado: $archivo" "INFO"
 
 			# Validar que el archivo sea texto
-			if file "$DIRREC$archivo" | grep -vq text$; then
+			if file "$DIRREC/$archivo" | grep -vq text$; then
 				# Es Binario
 				log "Archivo rechazado, motivo no es un archivo de texto." "INFO"
 				valido="false"
 			fi
 
 			# Validar que el archivo no este vacio
-			if [ ! -s "$DIRREC$archivo" ]; then
+			if [ ! -s "$DIRREC/$archivo" ]; then
 				log "Archivo rechazado, motivo: archivo vacio." "INFO"
 				valido="false"
 			fi
@@ -75,10 +75,10 @@ function loop {
 
 			if [ $valido == "true" ] && [ $formato_valido == "true" ]; then
 				log "Archivo aceptado" "INFO"
-				./MOVEP $DIRREC$archivo $DIROK DEMONEP
+				. ./MOVEP $DIRREC/$archivo $DIROK DEMONEP
 			else
 				log "Archivo rechazado" "INFO"
-				./MOVEP $DIRREC$archivo $DIRNOK DEMONEP
+				. ./MOVEP $DIRREC/$archivo $DIRNOK DEMONEP
 			fi
 
 		done

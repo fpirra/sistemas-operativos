@@ -211,9 +211,9 @@ while [ "$opcion" != "Si" ] ; do
         opcion="Si" # Por defecto se acepta
     fi
     if [ "$opcion" == "No" ] ; then
-        echo "Para ejecutar el demonio Demonep puede ejecutar el siguiente comando: ./DEMONEP &"
+        echo "Para ejecutar el demonio Demonep puede ejecutar el siguiente comando: . ./DEMONEP &"
         return $OK
     fi
 done
-$DIRBIN/DEMONEP &
+. $DIRBIN/DEMONEP &
 echo "Ejecutado DEMONEP con Process ID (PID): $!"
