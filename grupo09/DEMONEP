@@ -69,6 +69,21 @@ function loop {
 				date "+%m/%d/%Y" -d $formato_pedido > /dev/null  2>&1
  				if [ $? -ne 0 ]; then
  					formato_valido="false"
+ 				fi
+ 				anio=$(date "+%Y")
+ 				desde=$(grep "\s*$anio.*Anual" $DIRMAE/trimestres.csv | cut -d';' -f3)
+ 				hasta=$(grep "\s*$anio.*Anual" $DIRMAE/trimestres.csv | cut -d';' -f4)
+ 				desde=$(echo $desde | sed 's/\([0-9]\{2\}\)\/\([0-9]\{2\}\)\/\([0-9]\{4\}\)/\3\2\1/')
+ 				hasta=$(echo $hasta | sed 's/\([0-9]\{2\}\)\/\([0-9]\{2\}\)\/\([0-9]\{4\}\)/\3\2\1/')
+ 				if [ $fecha \< $desde ] || [ $fecha == $hasta ] || [ $fecha \> $hasta ]; then
+ 					formato_valido="false"
+ 				fi
+ 				hoy=$(date "+%Y%m%d")
+ 				if [ $fecha \> $hoy ]; then
+ 					formato_valido="false"
+ 				fi
+
+ 				if [ $formato_valido == "false" ]; then
  					log "Archivo rechazado, motivo: fecha $fecha incorrecta." "INFO"
  				fi
 			fi
