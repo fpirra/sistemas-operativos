@@ -5,15 +5,22 @@
 
 WHERE=`echo $1 | rev | cut -d/ -f1 | rev | cut -d. -f1`
 LOGFILE="$DIRLOG/$WHERE.log" # Usa el nombre del comando como nombre de archivo
-if [ 'INSTALEP' = $WHERE ];
+if [ 'INSTALEP' = "$WHERE" ];
 then
    LOGFILE="$DIRCONF/INSTALEP.log"
 fi
 
-if [ ! -f $LOGFILE ]; then
+if [ "$WHERE" == "" ]; then
+    echo "Error, el directorio $1 a escribir es un directorio invalido"
+    echo "Asegurese de no haber movido de lugar el script LOGEP"
+    exit 1
+fi
+
+if [ ! -f "$LOGFILE" ]; then
     touch $LOGFILE
-    if [ ! -f $LOGFILE ]; then
+    if [ ! -f "$LOGFILE" ]; then
         echo "No existe el archivo $LOGFILE y no se puede generar"
+        exit
     fi
 fi
 
