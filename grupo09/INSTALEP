@@ -297,10 +297,18 @@ else
 
         # Mover archivos faltantes
         for elemento in ${faltantes_DIRBIN[@]} ; do
-            cp "$GRUPO/$elemento" "$DIRBIN"
+            if [ -f "$GRUPO/$elemento" ]; then
+                cp "$GRUPO/$elemento" "$DIRBIN"
+            else
+                echo "No se puede localizar $GRUPO/$elemento."
+            fi
         done
         for elemento in ${faltantes_DIRMAE[@]} ; do
-            cp "$GRUPO/$elemento" "$DIRMAE"
+            if [ -f "$GRUPO/$elemento" ]; then
+                cp "$GRUPO/$elemento" "$DIRMAE"
+            else
+                echo "No se puede localizar $GRUPO/$elemento."
+            fi
         done
 
     fi
