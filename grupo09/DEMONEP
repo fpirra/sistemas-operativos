@@ -15,6 +15,7 @@ function ctrl_c {
 
 function loop {
 	contador=1
+	proc_pid=0
 	while ( $seguir )
 	do
 		log "Demonep ciclo nro. $contador" "INFO"
@@ -90,13 +91,28 @@ function loop {
 
 			if [ $valido == "true" ] && [ $formato_valido == "true" ]; then
 				log "Archivo aceptado" "INFO"
-				. ./MOVEP $DIRREC/$archivo $DIROK DEMONEP
+				./MOVEP $DIRREC/$archivo $DIROK DEMONEP
 			else
 				log "Archivo rechazado" "INFO"
-				. ./MOVEP $DIRREC/$archivo $DIRNOK DEMONEP
+				./MOVEP $DIRREC/$archivo $DIRNOK DEMONEP
 			fi
 
 		done
+
+		if [ $(ls $DIROK) ]; then
+			ps ax | grep -q "^\s*$proc_pid"
+			# Si falla el grep, no esta corriendo procep
+			if [ $? -eq 1 ]; then
+				# No esta ejecutandose procep
+				$DIRBIN/PROCEP &
+				proc_pid=$(echo $!)
+				log "Procep corriendo bajo el no.: $proc_pid" "INFO"
+			else
+				# Se esta ejecutando procep
+				log "Invocación de Procep pospuesta para el siguiente ciclo" "INFO"
+			fi
+		fi
+
 		sleep 30
 	done
 }
