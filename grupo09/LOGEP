@@ -35,7 +35,7 @@ fi
 LOGLINE=$(echo $WHO $WHEN $WHERE $WHAT $WHY)
 FILESIZE=$(wc -c $LOGFILE | cut -d' ' -f1)
 
-if [ $FILESIZE -ge $LOGSIZE ];
+if [ $FILESIZE -ge 5242882 ];
 then
     TMPFILE="templog.log"
     tail -n100 $LOGFILE >> $TMPFILE

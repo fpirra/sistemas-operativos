@@ -176,6 +176,7 @@ if ! [ -f "$DIRCONF"/INSTALEP.conf ] ; then
     echo 'LOGSIZE='"$LOGSIZE" >> "$DIRCONF/INSTALEP.conf"
     echo 'DIRNOK='"$DIRNOK" >> "$DIRCONF/INSTALEP.conf"
     echo 'SECUENCIA='"1" >> "$DIRCONF/INSTALEP.conf"
+    echo 'DEMONEP_PID='"0" >> "$DIRCONF/INSTALEP.conf"
 
     # Instalacion finalizada
 
@@ -229,7 +230,7 @@ else
     ls "$DIRMAE"
 
     # Verificar presencia de maestros y tablas
-    archivos=("CdP.mae" "CdA.mae" "CdC.mae" "agentes.mae" "tllama.tab" "umbral.tab")
+    archivos=("CdP.mae" "CdA.mae" "CdC.mae" "agentes.mae" "tllama.tab" "umbral.tab")  # TODO CORREGIR NOMBRES ARCHIVOS
     for archivo in ${archivos[@]} ; do
         if ! [[ "$archivos_DIRMAE" =~ (^|[[:space:]])"$archivo"($|[[:space:]]) ]] ; then
             faltantes_DIRMAE+=("$archivo")

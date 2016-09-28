@@ -215,5 +215,5 @@ while [ "$opcion" != "Si" ] ; do
         return $OK
     fi
 done
-. $DIRBIN/DEMONEP &
+$DIRBIN/DEMONEP &
 echo "Demonep corriendo bajo el no.: $!"

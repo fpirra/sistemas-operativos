@@ -89,7 +89,19 @@ function loop {
 # Cuerpo principal
 if ! [ -f "$DIRCONF/INSTALEP.conf" ] ; then
     echo "EPLAM no está adecuadamente instalado en el sistema. Ejecute INSTALEP."
-    return $ERROR
+    exit $ERROR
+fi
+
+# Busco el proceso para ver si se esta ejecutando
+last_pid=$(cat $DIRCONF/INSTALEP.conf | grep "DEMONEP_PID" | cut -d= -f2)
+ps ax | grep "^\s*$last_pid" &> /dev/null
+if [ $? -eq 0 ]; then
+	#Se esta ejecutando
+	echo "Ya se esta ejecutando DEMONEP. Saliendo..."
+	exit
+else
+	# Ejecutando por primera vez, actualizo INSTALEP.conf
+	sed -i -e "s/DEMONEP_PID=[0-9]*/DEMONEP_PID=$$/g" $DIRCONF/INSTALEP.conf
 fi
 
 loop
