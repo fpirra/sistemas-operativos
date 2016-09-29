@@ -3,11 +3,27 @@
 # Invocación: LOGEP COMMAND MESSAGE ERRLVL
 # E.g.: LOGEP $0 'Error en el archivo' 'ERR'
 
+# Ademas el directorio donde se encuentra la configuracion de instalacion es dirconf
 WHERE=`echo $1 | rev | cut -d/ -f1 | rev | cut -d. -f1`
+
+# Me tengo que posicionar en $GRUPO para esto
+# en version pseudocodigo
+#while [ ! -d dirconf ] && [ ! $PWD = "/" ]; do
+#   cd ..
+#done
+#if [ $PWD = "/" ]; then
+#    echo "tu vieja gil"
+#else
+#    DIRCONF=$PWD/dirconf
+#fi
+
 LOGFILE="$DIRLOG/$WHERE.log" # Usa el nombre del comando como nombre de archivo
 if [ 'INSTALEP' = "$WHERE" ];
 then
    LOGFILE="$DIRCONF/INSTALEP.log"
+else
+   DIRLOG=`grep DIRLOG ../dirconf/INSTALEP.conf | cut -d '=' -f 2`
+   LOGFILE="$DIRLOG/$WHERE.log" # Usa el nombre del comando como nombre de archivo    
 fi
 
 if [ "$WHERE" == "" ]; then
