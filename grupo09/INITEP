@@ -185,8 +185,8 @@ echo
 loguear "Directorio de archivos de novedades rechazadas: $DIRNOK" "INFO"
 echo "Directorio de archivos de novedades rechazadas: $DIRNOK"
 echo
-loguear "Directorio de archivos de reportes de llamadas: $DIRINFO" "INFO"
-echo "Directorio de archivos de reportes de llamadas: $DIRINFO"
+loguear "Directorio de archivos de reportes: $DIRINFO" "INFO"
+echo "Directorio de archivos de reportes: $DIRINFO"
 echo
 echo "Directorio de archivos de log: $DIRLOG"
 archivos_dirlog=$(ls "$DIRLOG")

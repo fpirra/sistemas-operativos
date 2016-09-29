@@ -1,11 +1,9 @@
 #!/bin/bash
 # Instalador del sistema EPLAM
 
-export GRUPO="$(pwd -P)" # Obtengo el directorio del script
+GRUPO="$(pwd -P)" # Obtengo el directorio del script
 cd $GRUPO
-export DIRCONF="$GRUPO"/dirconf # Directorio del archivo de configuracion
-export LOGSIZE=5242882 # Tamanio maximo de 512kb, en bytes, para el archivo de log
-
+DIRCONF="$GRUPO"/dirconf # Directorio del archivo de configuracion
 DIRBIN="$GRUPO"/bin
 DIRMAE="$GRUPO"/mae
 DIRREC="$GRUPO"/nov
@@ -26,7 +24,16 @@ ERROR=1
 
 # $1: Mensaje a loguear ; $2: Nivel de error
 function loguear {
-    $GRUPO/LOGEP INSTALEP "$1" "$2"
+    # LOGEP tiene un caso especial donde el archivo puede estar
+    # en $GRUPO o en $GRUPO/$DIRBIN/
+    if [ -f "$GRUPO/$DIRBIN/LOGEP" ]; then
+        LOGFN="$GRUPO/$DIRBIN/LOGEP"
+    elif [ -f "$GRUPO/LOGEP" ]; then
+        LOGFN="$GRUPO/LOGEP"
+    else
+        LOGFN="echo $@ &> /dev/null"
+    fi
+    $LOGFN INSTALEP "$1" "$2"
 }
 
 # $1: Variable donde guardar el valor ; $2: Mensaje a mostrar ; $3: Opcion por default
@@ -117,7 +124,7 @@ if ! [ -f "$DIRCONF"/INSTALEP.conf ] ; then
         opcion_maestra=A
         clear
         while [ "$opcion_maestra" != Si ] ; do
-            obtener_valor opcion_maestra "Directorio de ejecutables: $DIRBIN\n\nDirectorio de Maestros y Tablas: $DIRMAE\n\nDirectorio de recepción de archivos de novedades: $DIRREC\n\nEspacio mínimo libre para arribos: $DATASIZE MB\n\nDirectorio de archivos de novedades aceptados: $DIROK\n\nDirectorio de archivos de novedades procesados: $DIRPROC\n\nDirectorio de archivos de reportes de novedades: $DIRINFO\n\nDirectorio de archivos de log: $DIRLOG\n\nTamaño máximo para los archivos de log: $LOGSIZE Bytes\n\nDirectorio de archivos rechazados: $DIRNOK\n\nEstado de la instalación: LISTA\n\n¿Desea continuar con la instalación? (Si-No): " Si
+            obtener_valor opcion_maestra "Directorio de ejecutables: $DIRBIN\n\nDirectorio de Maestros y Tablas: $DIRMAE\n\nDirectorio de recepción de archivos de novedades: $DIRREC\n\nEspacio mínimo libre para arribos: $DATASIZE MB\n\nDirectorio de archivos de novedades aceptados: $DIROK\n\nDirectorio de archivos de novedades procesados: $DIRPROC\n\nDirectorio de archivos de reportes de novedades: $DIRINFO\n\nDirectorio de archivos de log: $DIRLOG\n\nDirectorio de archivos rechazados: $DIRNOK\n\nEstado de la instalación: LISTA\n\n¿Desea continuar con la instalación? (Si-No): " Si
             if [ "$opcion_maestra" = "No" ] ; then
                 # Si elige que no, vuelvo atras y pregunto nuevamente las rutas
                 clear
@@ -173,9 +180,9 @@ if ! [ -f "$DIRCONF"/INSTALEP.conf ] ; then
     echo 'DIRPROC='"$DIRPROC" >> "$DIRCONF/INSTALEP.conf"
     echo 'DIRINFO='"$DIRINFO" >> "$DIRCONF/INSTALEP.conf"
     echo 'DIRLOG='"$DIRLOG" >> "$DIRCONF/INSTALEP.conf"
-    echo 'LOGSIZE='"$LOGSIZE" >> "$DIRCONF/INSTALEP.conf"
     echo 'DIRNOK='"$DIRNOK" >> "$DIRCONF/INSTALEP.conf"
-    echo 'SECUENCIA='"1" >> "$DIRCONF/INSTALEP.conf"
+    echo 'SECUENCIA='"1" >> "$DIRCONF/INSTALEP.conf" # Se usa para movep, cuando copia un archivo que ya existe, usa este numero para extender el nombre del archivo
+    echo 'DEMONEP_PID='"0" >> "$DIRCONF/INSTALEP.conf" # Se usa para verificar si demonep se esta ejecutando o no
 
     # Instalacion finalizada
 
@@ -229,7 +236,7 @@ else
     ls "$DIRMAE"
 
     # Verificar presencia de maestros y tablas
-    archivos=("CdP.mae" "CdA.mae" "CdC.mae" "agentes.mae" "tllama.tab" "umbral.tab")
+    archivos=("tabla-AxC.csv" "provincias.csv" "trimestres.csv" "centros.csv" "actividades.csv")
     for archivo in ${archivos[@]} ; do
         if ! [[ "$archivos_DIRMAE" =~ (^|[[:space:]])"$archivo"($|[[:space:]]) ]] ; then
             faltantes_DIRMAE+=("$archivo")
