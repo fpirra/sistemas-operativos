@@ -31,9 +31,9 @@ La instalación se realiza mediante la ejecución ordenada de los siguientes scr
 Aquí se le pedirá el ingreso de directorios de configuración para poder crear la estructura.
 Debe seguir los pasos y finalizar la instalación.
 
-**IMPORTANTE: NO MOVER DE NINGUN LADO NINGÚN ARCHIVO! SI SE MUEVE DE LUGAR INSTALEP, INITEP, DEMONEP, PROCEP, LOGEP O MOVEP NO SE GARANTIZA EL CORRECTO FUNCIONAMIENTO DEL SISTEMA
+**IMPORTANTE: NO MOVER DE NINGUN LADO NINGÚN ARCHIVO! SI SE MUEVE DE LUGAR INSTALEP, INITEP, DEMONEP, PROCEP, LOGEP O MOVEP NO SE GARANTIZA EL CORRECTO FUNCIONAMIENTO DEL SISTEMA**
 
-En caso de que detecte malfuncionamiento, descomprimir el paquete de vuelta y empezar la instalación desde cero.**
+En caso de que detecte malfuncionamiento, descomprimir el paquete de vuelta y empezar la instalación desde cero.
 
 Si desea realizar la instalación nuevamente puede:
 ** Eliminar el archivo INSTALEP.conf que se encuentra en el directorio dirconf.
@@ -48,8 +48,8 @@ cd bin
 ```
 Ahora ejecutar INITEP.
 
-**IMPORTANTE: Este es el único script que requiere una forma de ejecución distinta a los demás scripts.
-Notar que la ejecución tiene dos puntos ". ./INITEP" y no sólo uno**
+**IMPORTANTE: Este es el único script que requiere una forma de ejecución distinta a los demás scripts.**
+**Notar que la ejecución tiene dos puntos ". ./INITEP" y no sólo uno**
 ```bash
 . ./INITEP
 ```
