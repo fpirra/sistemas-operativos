@@ -68,7 +68,7 @@ if ! [ -d "$DIRBIN" ] ; then
 else
     # Verificar presencia de ejecutables
     files_dirbin=$(ls "$DIRBIN")
-    files=("LOGEP" "INITEP" "DEMONEP" "MOVEP")  # TODO agregar LISTEP, PROCEP para la segunda entrega
+    files=("LOGEP" "INITEP" "DEMONEP" "MOVEP" "PROCEP")  # TODO agregar LISTEP para la segunda entrega
     for file in ${files[@]} ; do
         if [ `ls -1 | grep $file -c` -ne 1 ]; then
             faltantes_dirbin+=("$file")
@@ -211,9 +211,9 @@ while [ "$opcion" != "Si" ] ; do
         opcion="Si" # Por defecto se acepta
     fi
     if [ "$opcion" == "No" ] ; then
-        echo "Para ejecutar el demonio Demonep puede ejecutar el siguiente comando: . ./DEMONEP &"
+        echo "Para ejecutar el demonio Demonep puede ejecutar el siguiente comando: ./DEMONEP &"
         return $OK
     fi
 done
-. $DIRBIN/DEMONEP &
+$DIRBIN/DEMONEP &
 echo "Demonep corriendo bajo el no.: $!"

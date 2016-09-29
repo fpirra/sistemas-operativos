@@ -5,7 +5,7 @@
 # E.g.: MOVEP rec/archivo ok/ DEMONEP
 
 function loguear {
-    $GRUPO/LOGEP MOVEP "$1" "$2"
+    $DIRBIN/LOGEP MOVEP "$1" "$2"
 }
 
 if [ $# -ne 2 ] && [ $# -ne 3 ]; then

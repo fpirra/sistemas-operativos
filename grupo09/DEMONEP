@@ -15,6 +15,7 @@ function ctrl_c {
 
 function loop {
 	contador=1
+	proc_pid=0
 	while ( $seguir )
 	do
 		log "Demonep ciclo nro. $contador" "INFO"
@@ -69,19 +70,49 @@ function loop {
 				date "+%m/%d/%Y" -d $formato_pedido > /dev/null  2>&1
  				if [ $? -ne 0 ]; then
  					formato_valido="false"
+ 				fi
+ 				anio=$(date "+%Y")
+ 				desde=$(grep "\s*$anio.*Anual" $DIRMAE/trimestres.csv | cut -d';' -f3)
+ 				hasta=$(grep "\s*$anio.*Anual" $DIRMAE/trimestres.csv | cut -d';' -f4)
+ 				desde=$(echo $desde | sed 's/\([0-9]\{2\}\)\/\([0-9]\{2\}\)\/\([0-9]\{4\}\)/\3\2\1/')
+ 				hasta=$(echo $hasta | sed 's/\([0-9]\{2\}\)\/\([0-9]\{2\}\)\/\([0-9]\{4\}\)/\3\2\1/')
+ 				if [ $fecha \< $desde ] || [ $fecha == $hasta ] || [ $fecha \> $hasta ]; then
+ 					formato_valido="false"
+ 				fi
+ 				hoy=$(date "+%Y%m%d")
+ 				if [ $fecha \> $hoy ]; then
+ 					formato_valido="false"
+ 				fi
+
+ 				if [ $formato_valido == "false" ]; then
  					log "Archivo rechazado, motivo: fecha $fecha incorrecta." "INFO"
  				fi
 			fi
 
 			if [ $valido == "true" ] && [ $formato_valido == "true" ]; then
 				log "Archivo aceptado" "INFO"
-				. ./MOVEP $DIRREC/$archivo $DIROK DEMONEP
+				./MOVEP $DIRREC/$archivo $DIROK DEMONEP
 			else
 				log "Archivo rechazado" "INFO"
-				. ./MOVEP $DIRREC/$archivo $DIRNOK DEMONEP
+				./MOVEP $DIRREC/$archivo $DIRNOK DEMONEP
 			fi
 
 		done
+
+		if [ $(ls "$DIROK") ]; then
+			ps ax | grep -q "^\s*$proc_pid"
+			# Si falla el grep, no esta corriendo procep
+			if [ $? -eq 1 ]; then
+				# No esta ejecutandose procep
+				$DIRBIN/PROCEP &
+				proc_pid=$(echo $!)
+				log "Procep corriendo bajo el no.: $proc_pid" "INFO"
+			else
+				# Se esta ejecutando procep
+				log "Invocación de Procep pospuesta para el siguiente ciclo" "INFO"
+			fi
+		fi
+
 		sleep 30
 	done
 }
@@ -89,7 +120,19 @@ function loop {
 # Cuerpo principal
 if ! [ -f "$DIRCONF/INSTALEP.conf" ] ; then
     echo "EPLAM no está adecuadamente instalado en el sistema. Ejecute INSTALEP."
-    return $ERROR
+    exit $ERROR
+fi
+
+# Busco el proceso para ver si se esta ejecutando
+last_pid=$(cat $DIRCONF/INSTALEP.conf | grep "DEMONEP_PID" | cut -d= -f2)
+ps ax | grep "^\s*$last_pid" &> /dev/null
+if [ $? -eq 0 ]; then
+	#Se esta ejecutando
+	echo "Ya se esta ejecutando DEMONEP. Saliendo..."
+	exit
+else
+	# Ejecutando por primera vez, actualizo INSTALEP.conf
+	sed -i -e "s/DEMONEP_PID=[0-9]*/DEMONEP_PID=$$/g" $DIRCONF/INSTALEP.conf
 fi
 
 loop

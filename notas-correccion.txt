@@ -1,0 +1,17 @@
+Corregir los nobmres de archivos del isntalador (los que son de registros9.
+
+Usar ./bin para usar el LOG, tanto en instalep como en initep.
+
+El texto en INITEP hay un lugar que dice "reporte de llamadas". Qué llamadas? Está copiado desde INSTALEP.
+
+Que INSTALEP no setee ninguna variable. $DIRCONF puede estar hardcodeada. INITEP las levanta desde INSTALEP.conf
+
+Que el DEMONEP no pueda levantarse 2 veces (guardar el PID con el que se lanza).
+
+DEMONEP tiene que tomar los datos para validar archivos desde la tabla de trimestres
+Faltó validar ahi el principio de cada trimestre y la fecha posterior a la actual.
+
+LOG con la linea 38
+
+
+
