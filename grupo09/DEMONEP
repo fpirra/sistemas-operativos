@@ -98,8 +98,8 @@ function loop {
 			fi
 
 		done
-
-		if [ $(ls "$DIROK") ]; then
+		cantidad=$(ls "$DIROK" | wc -l)
+		if [ $cantidad -gt 0 ]; then
 			ps ax | grep -q "^\s*$proc_pid"
 			# Si falla el grep, no esta corriendo procep
 			if [ $? -eq 1 ]; then
