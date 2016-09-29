@@ -27,24 +27,24 @@ function loguear {
     # Esto es lo que hicimos con santi 
     # LOGEP tiene un caso especial donde el archivo puede estar
     # en $GRUPO o en $GRUPO/$DIRBIN/
-    #if [ -f "$GRUPO/$DIRBIN/LOGEP" ]; then
-    #    LOGFN="$GRUPO/$DIRBIN/LOGEP"
-    #elif [ -f "$GRUPO/LOGEP" ]; then
-    #    LOGFN="$GRUPO/LOGEP"
-    #else
-    #    LOGFN="echo $@ &> /dev/null"
-    #fi
-    #$LOGFN INSTALEP "$1" "$2"
-    #=======
-
-    if [ -f $GRUPO/LOGEP ]; then
-        $GRUPO/LOGEP INSTALEP "$1" "$2"
-    elif [ -f $DIRBIN/LOGEP ]; then
-        $DIRBIN/LOGEP INSTALEP "$1" "$2"
+    if [ -f "$GRUPO/$DIRBIN/LOGEP" ]; then
+        LOGFN="$GRUPO/$DIRBIN/LOGEP"
+    elif [ -f "$GRUPO/LOGEP" ]; then
+        LOGFN="$GRUPO/LOGEP"
     else
-        logger=$(find $GRUPO -name LOGEP | head -n 1)
-        $logger "$1" "$2"
+        LOGFN="echo $@ &> /dev/null"
     fi
+    $LOGFN INSTALEP "$1" "$2"
+    
+
+    #if [ -f $GRUPO/LOGEP ]; then
+    #    $GRUPO/LOGEP INSTALEP "$1" "$2"
+    #elif [ -f $DIRBIN/LOGEP ]; then
+    #    $DIRBIN/LOGEP INSTALEP "$1" "$2"
+    #else
+    #    logger=$(find $GRUPO -name LOGEP | head -n 1)
+    #    $logger "$1" "$2"
+    #fi
 }
 
 # $1: Variable donde guardar el valor ; $2: Mensaje a mostrar ; $3: Opcion por default
