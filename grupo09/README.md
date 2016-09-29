@@ -16,6 +16,7 @@ Los requisitos para poder utilizar el sistema son:
 * Comandos: CAT, SED
 
 **Pasos para instalar el sistema**
+
 Ingresar a la carpeta ejecutando:
 ```bash
 cd grupo09
@@ -23,27 +24,30 @@ cd grupo09
 
 La instalación se realiza mediante la ejecución ordenada de los siguientes scripts:
 
-* INSTALEP - Instalación
+1. INSTALEP - Instalación
 ```bash
-. ./INSTALEP
+./INSTALEP
 ```
 Aquí se le pedirá el ingreso de directorios de configuración para poder crear la estructura.
 Debe seguir los pasos y finalizar la instalación.
+
 **IMPORTANTE: NO MOVER DE NINGUN LADO NINGÚN ARCHIVO! SI SE MUEVE DE LUGAR INSTALEP, INITEP, DEMONEP, PROCEP, LOGEP O MOVEP NO SE GARANTIZA EL CORRECTO FUNCIONAMIENTO DEL SISTEMA
+
 En caso de que detecte malfuncionamiento, descomprimir el paquete de vuelta y empezar la instalación desde cero.**
 
 Si desea realizar la instalación nuevamente puede:
-* Eliminar el archivo INSTALEP.conf que se encuentra en el directorio dirconf.
-* Eliminar la carpeta entera y descomprimir nuevamente el paquete de instalación.
+** Eliminar el archivo INSTALEP.conf que se encuentra en el directorio dirconf.
+** Eliminar la carpeta entera y descomprimir nuevamente el paquete de instalación.
 Y volver a instalar.
 
-* INITEP - Configuración de variables de entorno
+2. INITEP - Configuración de variables de entorno
 Luego de haber instalado, debe entrar en la carpeta especificada en la instalación, por defecto la llamaremos bin, si usted eligió nombrarla de otra manera reemplace "bin" por el nombre que usted haya ingresado.
 Aquí se encuentran todos los ejecutables del sistema para que funcione.
 ```bash
 cd bin
 ```
 Ahora ejecutar INITEP.
+
 **IMPORTANTE: Este es el único script que requiere una forma de ejecución distinta a los demás scripts.
 Notar que la ejecución tiene dos puntos ". ./INITEP" y no sólo uno**
 ```bash
@@ -51,16 +55,16 @@ Notar que la ejecución tiene dos puntos ". ./INITEP" y no sólo uno**
 ```
 A partir de aquí, el sistema ya se encuentra iniciado y puede comenzar a procesar archivos.
 Para esto hay que iniciar el proceso que estará esperando que ingresen nuevos archivos a procesar
-* DEMONEP - Proceso demonio que recibe archivos, los valida y los mueve de carpetas
+3. DEMONEP - Proceso demonio que recibe archivos, los valida y los mueve de carpetas
 ```bash
 ./DEMONEP &
 ```
 Notar el signo "&"
 
 El comando DEMONEP se puede iniciar de dos formas:
-* 1 El script INITEP ofrece iniciar el servicio, que de escoger Si a la opción, nos informa el Process ID
+⋅⋅1. El script INITEP ofrece iniciar el servicio, que de escoger Si a la opción, nos informa el Process ID
 del proceso
-* 2 Ejecutando el comando en "background" de la forma indicada:
+⋅⋅2. Ejecutando el comando en "background" de la forma indicada:
 ```bash
 ./DEMONEP &
 ```
