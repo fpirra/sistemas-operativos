@@ -155,11 +155,32 @@ if ! [ -f "$DIRCONF"/INSTALEP.conf ] ; then
     # Mover ejecutables y funciones...
     loguear "Instalando programas y funciones. . . ." "INFO"
     echo "Instalando programas y funciones. . . ."
-    cp "$GRUPO"/LOGEP "$DIRBIN"
-    cp "$GRUPO"/DEMONEP "$DIRBIN"
-    cp "$GRUPO"/INITEP "$DIRBIN"
-    cp "$GRUPO"/MOVEP "$DIRBIN"
-    cp "$GRUPO"/PROCEP "$DIRBIN"
+    if [ ! -f "$GRUPO/LOGEP" ]; then
+        echo "NO SE ENCUENTRA LOGEP. Asegurese de que no lo haya movido de lugar o borrado"
+        exit 1
+    fi
+    mv "$GRUPO"/LOGEP "$DIRBIN"
+    if [ ! -f "$GRUPO/DEMONEP" ]; then
+        echo "NO SE ENCUENTRA DEMONEP. Asegurese de que no lo haya movido de lugar o borrado"
+        exit 1
+    fi
+    mv "$GRUPO"/DEMONEP "$DIRBIN"
+    if [ ! -f "$GRUPO/INITEP" ]; then
+        echo "NO SE ENCUENTRA INITEP. Asegurese de que no lo haya movido de lugar o borrado"
+        exit 1
+    fi
+    mv "$GRUPO"/INITEP "$DIRBIN"
+    if [ ! -f "$GRUPO/MOVEP" ]; then
+        echo "NO SE ENCUENTRA MOVEP. Asegurese de que no lo haya movido de lugar o borrado"
+        exit 1
+    fi
+    mv "$GRUPO"/MOVEP "$DIRBIN"
+    if [ ! -f "$GRUPO/PROCEP" ]; then
+        echo "NO SE ENCUENTRA PROCEP. Asegurese de que no lo haya movido de lugar o borrado"
+        exit 1
+    fi
+    mv "$GRUPO"/PROCEP "$DIRBIN"
+
 
 
     # Mover archivos y tablas

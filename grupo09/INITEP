@@ -7,7 +7,17 @@ ERROR=1
 
 # $1: Mensaje a loguear ; $2: Tipo del mensaje
 function loguear {
-    $GRUPO/LOGEP INITEP "$1" "$2"
+    # Esto es lo que hicimos con santi
+    # LOGEP tiene un caso especial donde el archivo puede estar
+    # en $GRUPO o en $DIRBIN/
+
+    if [ -f "$DIRBIN/LOGEP" ]; then
+        $DIRBIN/LOGEP INITEP "$1" "$2"
+    elif [ -f "$GRUPO/LOGEP" ]; then
+        $GRUPO/LOGEP INITEP "$1" "$2"
+    else
+        echo $@ &> /dev/null
+    fi
 }
 
 # /Funciones

@@ -12,7 +12,8 @@ while [ ! -d dirconf ] && [ ! $PWD = "/" ]; do
    cd ..
 done
 if [ $PWD = "/" ]; then
-    echo "tu vieja gil"
+    echo "No se pudo localizar el directorio dirconf"
+    exit
 else
     DIRCONF=$PWD/dirconf
 fi
@@ -21,8 +22,8 @@ if [ 'INSTALEP' = "$WHERE" ];
 then
    LOGFILE="$DIRCONF/INSTALEP.log"
 else
-   DIRLOG=`grep DIRLOG ../dirconf/INSTALEP.conf | cut -d '=' -f 2`
-   LOGFILE="$DIRLOG/$WHERE.log" # Usa el nombre del comando como nombre de archivo    
+   DIRLOG=`grep DIRLOG $DIRCONF/INSTALEP.conf | cut -d '=' -f 2`
+   LOGFILE="$DIRLOG/$WHERE.log" # Usa el nombre del comando como nombre de archivo
 fi
 
 if [ "$WHERE" == "" ]; then
