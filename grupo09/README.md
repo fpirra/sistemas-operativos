@@ -36,8 +36,8 @@ Debe seguir los pasos y finalizar la instalación.
 En caso de que detecte malfuncionamiento, descomprimir el paquete de vuelta y empezar la instalación desde cero.
 
 Si desea realizar la instalación nuevamente puede:
-** Eliminar el archivo INSTALEP.conf que se encuentra en el directorio dirconf.
-** Eliminar la carpeta entera y descomprimir nuevamente el paquete de instalación.
+1. Eliminar el archivo INSTALEP.conf que se encuentra en el directorio dirconf.
+2. Eliminar la carpeta entera y descomprimir nuevamente el paquete de instalación.
 Y volver a instalar.
 
 2. INITEP - Configuración de variables de entorno
