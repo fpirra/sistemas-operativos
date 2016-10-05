@@ -119,7 +119,7 @@ function loop {
 
 # Cuerpo principal
 if ! [ -f "$DIRCONF/INSTALEP.conf" ] ; then
-    echo "EPLAM no está adecuadamente instalado en el sistema. Ejecute INSTALEP."
+    echo "EPLAM no está adecuadamente inicializado en el sistema. Ejecute INSTALEP."
     exit $ERROR
 fi
 
