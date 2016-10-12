@@ -1,0 +1,109 @@
+#!/usr/bin/perl
+use warnings;
+
+%comparacion_trimestre = ("Primer Trimestre 2016", 1, "Segundo Trimestre 2016", 2, "Tercer Trimestre 2016", 3, "Cuarto Trimestre 2016", 4);
+
+sub mostrar_menu {
+  print "Menú de ayuda \n";
+  print "   Sancionados: \n";
+  print "     ct - Listar los registros ordenados por código de centro y luego por trimestre\n";
+  print "     tc - Listar los registros ordenados por trimestre y luego por código de centro\n";
+  print "   Ejecutados: \n";
+  print "     e - Listar el presupuesto ejecutado para un año presupuestario\n";
+  print "   Control: \n";
+  print "     st - Saldo por trimestre\n";
+  print "     sa - Saldo acumulado por año\n";
+}
+
+sub inicializar_rutas_de_directorio {
+
+  %rutas_de_directorios = ();
+
+  $archivo_de_configuracion = '../dirconf/INSTALEP.conf';
+  open($manejador_de_archivo, '<:encoding(UTF-8)', $archivo_de_configuracion)
+    or die "No se pudo abrir el archivo de configuración '$archivo_de_configuracion' $!";
+
+  while ($fila = <$manejador_de_archivo>) {
+    chomp $fila;
+    @segmento = split /=/, $fila;
+    $rutas_de_directorios{$segmento[0]} = $segmento[1];
+  }
+
+  return %rutas_de_directorios;
+
+}
+
+sub carga_de_archivos {
+
+  ($rutas_de_directorio, $anio) = @_;
+
+  $archivo = $rutas_de_directorio.$anio.".csv";
+
+  open($manejador_de_archivo, '<:encoding(UTF-8)', $archivo)
+    or die "No se pudo abrir la tabla de presupuesto $!";
+
+  @archivo_en_memoria;
+
+  #Evito los el principio de archivo
+  $fila = <$manejador_de_archivo>;
+
+  while ($fila = <$manejador_de_archivo>) {
+    chomp $fila;
+    my @segmento = split /;/, $fila;
+    push (@archivo_en_memoria, \@segmento);
+  }
+  return @archivo_en_memoria;
+}
+
+sub comparacion_trimestre {
+  ($trimestre) = @_;
+
+  return $comparacion_trimestre{$trimestre};
+}
+
+sub comparacion_centro {
+  ($centro) = @_;
+
+  my $find = ".";
+  my $replace = "";
+
+  $centro =~ s/\.|-//g;
+
+  return $centro;
+}
+
+
+sub ct {
+
+  (@presupuesto_sancionado) = @_;
+
+  @presupuesto_sancionado = sort {
+      &comparacion_centro($a->[0]) <=> &comparacion_centro($b->[0])
+      ||
+      &comparacion_trimestre($a->[1]) <=> &comparacion_trimestre($b->[1])
+    } @presupuesto_sancionado;
+
+  foreach my $row (@presupuesto_sancionado)
+  {
+    print join(",",@$row) . "\n";
+  }
+
+}
+
+sub main {
+  $comando = $ARGV[0];
+
+  if ($comando eq "-help") {
+    &mostrar_menu;
+  }
+
+  %rutas_de_directorios = &inicializar_rutas_de_directorio;
+
+  @presupuesto_sancionado = &carga_de_archivos($rutas_de_directorios{"DIRMAE"}."/sancionado-", "2016");
+
+  &ct(@presupuesto_sancionado);
+
+}
+
+
+&main;
