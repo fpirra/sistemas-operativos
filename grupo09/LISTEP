@@ -1,7 +1,8 @@
 #!/usr/bin/perl
 use warnings;
+use strict;
 
-%comparacion_trimestre = ("Primer Trimestre 2016", 1, "Segundo Trimestre 2016", 2, "Tercer Trimestre 2016", 3, "Cuarto Trimestre 2016", 4);
+my %comparacion_trimestre = ("PrimerTrimestre", "1", "SegundoTrimestre", "2", "TercerTrimestre", "3", "CuartoTrimestre", "4", "Sumatotal", "5");
 
 sub mostrar_menu {
   print "Menú de ayuda \n";
@@ -17,15 +18,15 @@ sub mostrar_menu {
 
 sub inicializar_rutas_de_directorio {
 
-  %rutas_de_directorios = ();
+  my %rutas_de_directorios = ();
 
-  $archivo_de_configuracion = '../dirconf/INSTALEP.conf';
-  open($manejador_de_archivo, '<:encoding(UTF-8)', $archivo_de_configuracion)
-    or die "No se pudo abrir el archivo de configuración '$archivo_de_configuracion' $!";
+  my $archivo_de_configuracion = '../dirconf/INSTALEP.conf';
+  open(my $manejador_de_archivo, '<:encoding(UTF-8)', $archivo_de_configuracion)
+    or die "No se pudo abrir el archivo de configuración '$archivo_de_configuracion'  $!";
 
-  while ($fila = <$manejador_de_archivo>) {
+  while (my $fila = <$manejador_de_archivo>) {
     chomp $fila;
-    @segmento = split /=/, $fila;
+    my @segmento = split /=/, $fila;
     $rutas_de_directorios{$segmento[0]} = $segmento[1];
   }
 
@@ -33,19 +34,31 @@ sub inicializar_rutas_de_directorio {
 
 }
 
+sub extracion_anio {
+
+  (my $string) = @_;
+
+  $string =~ s/ //g;
+
+  (my $anio) = $string =~ m/([0-9]+)/g;
+
+  return $anio;
+
+}
+
 sub carga_de_archivos {
 
-  ($rutas_de_directorio, $anio) = @_;
+  (my $rutas_de_directorio, my $anio) = @_;
 
-  $archivo = $rutas_de_directorio.$anio.".csv";
+  my $archivo = $rutas_de_directorio.$anio.".csv";
 
-  open($manejador_de_archivo, '<:encoding(UTF-8)', $archivo)
+  open(my $manejador_de_archivo, '<:encoding(UTF-8)', $archivo)
     or die "No se pudo abrir la tabla de presupuesto $!";
 
-  @archivo_en_memoria;
+  my @archivo_en_memoria;
 
   #Evito los el principio de archivo
-  $fila = <$manejador_de_archivo>;
+  my $fila = <$manejador_de_archivo>;
 
   while ($fila = <$manejador_de_archivo>) {
     chomp $fila;
@@ -56,26 +69,70 @@ sub carga_de_archivos {
 }
 
 sub comparacion_trimestre {
-  ($trimestre) = @_;
+  (my $trimestre) = @_;
 
-  return $comparacion_trimestre{$trimestre};
+  $trimestre =~ s/ //g;
+
+  (my $trimestre_nombre) = $trimestre =~ m/([a-zA-Z]+)/g;
+
+  my $valor_trimestre = $comparacion_trimestre{$trimestre_nombre};
+
+  my $anio = &extracion_anio($trimestre);
+
+  return $anio.$valor_trimestre;
 }
 
 sub comparacion_centro {
-  ($centro) = @_;
-
-  my $find = ".";
-  my $replace = "";
+  (my $centro) = @_;
 
   $centro =~ s/\.|-//g;
 
   return $centro;
 }
 
+sub remover_comas_por_puntos {
+  (my $string) = @_;
+
+  $string =~ s/,/./g;
+
+  return $string;
+}
+
+
 
 sub ct {
 
-  (@presupuesto_sancionado) = @_;
+  (my @presupuesto_sancionado) = @_;
+
+  my %suma_totales = ();
+
+  foreach my $row (@presupuesto_sancionado) {
+
+    if ( !(exists $suma_totales{$row->[0]}) ) {
+      $suma_totales{$row->[0]} = 0;
+    }
+
+    $suma_totales{$row->[0]} = $suma_totales{$row->[0]} + &remover_comas_por_puntos($row->[2]) + &remover_comas_por_puntos($row->[3]);
+
+    $row->[2] = &remover_comas_por_puntos($row->[2]) + &remover_comas_por_puntos($row->[3]);
+
+    delete $row->[3];
+  }
+
+  my @llaves = keys %suma_totales;
+
+  my $suma_total = 0;
+
+  my $suma_total_string = "Suma total ".&extracion_anio(@presupuesto_sancionado[0]->[1]);
+
+  foreach my $llave (@llaves) {
+
+    my @segmento = ($llave, $suma_total_string, $suma_totales{$llave});
+
+    $suma_total += $suma_totales{$llave};
+
+    push @presupuesto_sancionado, \@segmento;
+  }
 
   @presupuesto_sancionado = sort {
       &comparacion_centro($a->[0]) <=> &comparacion_centro($b->[0])
@@ -83,25 +140,98 @@ sub ct {
       &comparacion_trimestre($a->[1]) <=> &comparacion_trimestre($b->[1])
     } @presupuesto_sancionado;
 
+  my @segmento = ($suma_total_string, $suma_total);
+
+  push @presupuesto_sancionado, \@segmento;
+
   foreach my $row (@presupuesto_sancionado)
   {
-    print join(",",@$row) . "\n";
+    print join(";",@$row) . "\n";
   }
 
+  return @presupuesto_sancionado;
+}
+
+sub escribir_archivo {
+  (my $nombre_archvo, my $ruta, my @texto_a_escribir) = @_;
+
+  open(my $manejador_de_archivo, '>:encoding(UTF-8)', $ruta.$nombre_archvo)
+    or die "No se pudo abrir el archivo para la grabacion '$ruta.$nombre_archvo'  $!";
+
+
+    foreach my $row (@texto_a_escribir)
+    {
+      print $manejador_de_archivo join(";",@$row) . "\n";
+    }
+}
+
+
+sub tc {
+
+    (my @presupuesto_sancionado) = @_;
+
+    my %suma_totales = ();
+
+    foreach my $row (@presupuesto_sancionado) {
+
+      if ( !(exists $suma_totales{$row->[1]}) ) {
+        $suma_totales{$row->[1]} = 0;
+      }
+
+      $suma_totales{$row->[1]} = $suma_totales{$row->[1]} + &remover_comas_por_puntos($row->[2]) + &remover_comas_por_puntos($row->[3]);
+
+      $row->[2] = &remover_comas_por_puntos($row->[2]) + &remover_comas_por_puntos($row->[3]);
+
+      delete $row->[3];
+    }
+
+    my @llaves = keys %suma_totales;
+
+    my $suma_total = 0;
+
+    my $suma_total_string = "Suma total ".&extracion_anio(@presupuesto_sancionado[0]->[1]);
+
+    foreach my $llave (@llaves) {
+
+      my @segmento = ($suma_total_string, $llave, $suma_totales{$llave});
+
+      $suma_total += $suma_totales{$llave};
+
+      push @presupuesto_sancionado, \@segmento;
+    }
+
+    @presupuesto_sancionado = sort {
+        &comparacion_trimestre($a->[1]) <=> &comparacion_trimestre($b->[1])
+        ||
+        &comparacion_centro($a->[0]) <=> &comparacion_centro($b->[0])
+      } @presupuesto_sancionado;
+
+    my @segmento = ($suma_total_string, $suma_total);
+
+    push @presupuesto_sancionado, \@segmento;
+
+    foreach my $row (@presupuesto_sancionado)
+    {
+      print join(";",@$row) . "\n";
+    }
+
+    return @presupuesto_sancionado;
 }
 
 sub main {
-  $comando = $ARGV[0];
+  my $comando = $ARGV[0];
 
   if ($comando eq "-help") {
     &mostrar_menu;
   }
 
-  %rutas_de_directorios = &inicializar_rutas_de_directorio;
+  my %rutas_de_directorios = &inicializar_rutas_de_directorio;
 
-  @presupuesto_sancionado = &carga_de_archivos($rutas_de_directorios{"DIRMAE"}."/sancionado-", "2016");
+  my @presupuesto_sancionado = &carga_de_archivos($rutas_de_directorios{"DIRMAE"}."/sancionado-", "2016");
 
-  &ct(@presupuesto_sancionado);
+  my @texto = &tc(@presupuesto_sancionado);
+
+  #&escribir_archivo("/ejemplo", ".", @texto);
 
 }
 
