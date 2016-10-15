@@ -1,8 +1,24 @@
 #!/bin/bash
+# test init
+GRUPO="$(pwd -P)" # Obtengo el directorio del script
+cd $GRUPO
+DIRCONF="$GRUPO"/dirconf # Directorio del archivo de configuracion
+DIRBIN="$GRUPO"
+DIRMAE="$GRUPO"/mae
+DIRREC="$GRUPO"/nov
+DIROK="$GRUPO"/ok
+DIRPROC="$GRUPO"/imp/proc
+DIRINFO="$GRUPO"/rep
+DIRLOG="$GRUPO"/log
+DIRNOK="$GRUPO"/nok
+
+VAR_INITEP="true"
+#test end
 
 # $1: Mensaje a loguear ; $2: Tipo del mensaje
 function log {
-    $DIRBIN/LOGEP PROCEP "$1" "$2"
+  echo "$1" "$2"
+  #$DIRBIN/LOGEP PROCEP "$1" "$2"
 }
 
 seguir=true
@@ -14,7 +30,40 @@ function ctrl_c {
 }
 
 function loop {
-	return
+	log "Cantidad de archivos a procesar: $(ls -l $DIROK| wc -l)" "WAR"
+	while ( $seguir )
+	do
+		for archivo in $(ls $DIROK)
+		do
+			archivo_valido="true"
+			# Validar que no esté dentro de los procesados
+			if [ -f "$DIRPROC/$archivo" ] ; then
+		    log "Archivo Duplicado. Se rechaza el archivo $archivo"
+				archivo_valido="false"	
+			fi
+
+			# Iteración de registros dentro de cada archivo
+
+			# 1) Validar formato correcto del archivo (Primer registro)
+			# 1a) Incorrecto: ./MOVEP $DIRREC/$archivo $DIRNOK PROCEP
+			# 1b) Correcto: -> Grabar en log: Archivo a procesar <nombre del archivo>.
+
+			# 2) Validar los campos
+
+			# 3) Resultado de REGISTRO
+			# 3a) Grabar registro aceptado en DIRPROC/ejecutado-<año presupuestario>
+			# 3b) Grabar registro rechazado en DIRPROC/rechazado-<año presupuestario>
+
+			# Fin iteración
+
+			# 4) Totalizar
+			# 4a) Registros leidos
+			# 4b) Registros rechazados
+			# 4a) Registros aceptados
+
+		done
+		seguir=false
+	done
 }
 
 # Cuerpo principal
