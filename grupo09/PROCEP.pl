@@ -10,7 +10,7 @@ if(!defined $ENV{'VAR_INITEP'}) {
 }
 
 @archivo_para_procesar = glob($ENV{'DIRREC'});
-system("LOGEP", @archivo_para_procesar);
+system("LOGEP", 'Cantidad de archivos a procesar @archivo_para_procesar');
 #Grabar en log
 #Cantidad de archivos a procesar:<cantidad>
 
