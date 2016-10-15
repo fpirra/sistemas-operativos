@@ -9,13 +9,20 @@ if(!defined $ENV{'VAR_INITEP'}) {
     die "El ambiente no fue inizializado. Ejecute INITEP"
 }
 
+@archivo_para_procesar = glob($ENV{'DIRREC'});
+system("LOGEP", @archivo_para_procesar);
 #Grabar en log
 #Cantidad de archivos a procesar:<cantidad>
 
-@archivo_para_procesar = glob($ENV{'DIRREC'});
 
 
 
+opendir my $dir, $ENV{'DIRREC'} or die 'No se encontró el directorio: $!';
+my @files = readdir $dir;
+
+for my $file (@files) {
+
+}
 #ciclar archivos
 
 #ANTES DE PROCESAR UN ARCHIVO, VERIFICAR QUE NO ESTA DUPLICADO
