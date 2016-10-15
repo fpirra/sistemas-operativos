@@ -1,1 +1,27 @@
-sleep 45
+#!/bin/bash
+
+# $1: Mensaje a loguear ; $2: Tipo del mensaje
+function log {
+    $DIRBIN/LOGEP PROCEP "$1" "$2"
+}
+
+seguir=true
+trap ctrl_c INT
+
+function ctrl_c {
+	echo "Finalizando..."
+	seguir=false
+}
+
+function loop {
+	return
+}
+
+# Cuerpo principal
+
+# Verificar si el ambiente ya fue inicializado
+if [ -z "$VAR_INITEP" ] ; then
+	echo "El ambiente no fue inicializado. Para iniciar ejecute INITEP nuevamente."
+else
+	loop
+fi
