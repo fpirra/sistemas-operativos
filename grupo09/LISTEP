@@ -30,6 +30,8 @@ sub inicializar_rutas_de_directorio {
     $rutas_de_directorios{$segmento[0]} = $segmento[1];
   }
 
+  close($manejador_de_archivo);
+
   return %rutas_de_directorios;
 
 }
@@ -65,6 +67,9 @@ sub carga_de_archivos {
     my @segmento = split /;/, $fila;
     push (@archivo_en_memoria, \@segmento);
   }
+
+  close($manejador_de_archivo);
+
   return @archivo_en_memoria;
 }
 
@@ -163,6 +168,8 @@ sub escribir_archivo {
     {
       print $manejador_de_archivo join(";",@$row) . "\n";
     }
+
+    close($manejador_de_archivo);
 }
 
 
