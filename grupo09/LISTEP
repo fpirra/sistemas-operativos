@@ -1,6 +1,8 @@
 #!/usr/bin/perl
 use warnings;
 use strict;
+use Scalar::Util qw(looks_like_number);
+
 
 my %comparacion_trimestre = ("PrimerTrimestre", "1", "SegundoTrimestre", "2", "TercerTrimestre", "3", "CuartoTrimestre", "4", "Sumatotal", "5");
 
@@ -21,16 +23,16 @@ sub inicializar_rutas_de_directorio {
   my %rutas_de_directorios = ();
 
   my $archivo_de_configuracion = '../dirconf/INSTALEP.conf';
-  open(my $manejador_de_archivo, '<:encoding(UTF-8)', $archivo_de_configuracion)
+  open(MANEJADOR, '<:encoding(UTF-8)', $archivo_de_configuracion)
     or die "No se pudo abrir el archivo de configuración '$archivo_de_configuracion'  $!";
 
-  while (my $fila = <$manejador_de_archivo>) {
+  while (my $fila = <MANEJADOR>) {
     chomp $fila;
     my @segmento = split /=/, $fila;
     $rutas_de_directorios{$segmento[0]} = $segmento[1];
   }
 
-  close($manejador_de_archivo);
+  close(MANEJADOR);
 
   return %rutas_de_directorios;
 
@@ -50,25 +52,23 @@ sub extracion_anio {
 
 sub carga_de_archivos {
 
-  (my $rutas_de_directorio, my $anio) = @_;
+  (my $archivo) = @_;
 
-  my $archivo = $rutas_de_directorio.$anio.".csv";
-
-  open(my $manejador_de_archivo, '<:encoding(UTF-8)', $archivo)
-    or die "No se pudo abrir la tabla de presupuesto $!";
+  open(MANEJADOR, '<:encoding(UTF-8)', $archivo)
+    or die "No se pudo abrir el archivo $archivo $!";
 
   my @archivo_en_memoria;
 
   #Evito los el principio de archivo
-  my $fila = <$manejador_de_archivo>;
+  my $fila = <MANEJADOR>;
 
-  while ($fila = <$manejador_de_archivo>) {
+  while ($fila = <MANEJADOR>) {
     chomp $fila;
     my @segmento = split /;/, $fila;
     push (@archivo_en_memoria, \@segmento);
   }
 
-  close($manejador_de_archivo);
+  close(MANEJADOR);
 
   return @archivo_en_memoria;
 }
@@ -91,6 +91,10 @@ sub comparacion_centro {
   (my $centro) = @_;
 
   $centro =~ s/\.|-//g;
+
+  if( !looks_like_number($centro) ){
+    return 0;
+  }
 
   return $centro;
 }
@@ -128,7 +132,7 @@ sub ct {
 
   my $suma_total = 0;
 
-  my $suma_total_string = "Suma total ".&extracion_anio(@presupuesto_sancionado[0]->[1]);
+  my $suma_total_string = "Suma total ".&extracion_anio($presupuesto_sancionado[0]->[1]);
 
   foreach my $llave (@llaves) {
 
@@ -149,27 +153,22 @@ sub ct {
 
   push @presupuesto_sancionado, \@segmento;
 
-  foreach my $row (@presupuesto_sancionado)
-  {
-    print join(";",@$row) . "\n";
-  }
-
   return @presupuesto_sancionado;
 }
 
 sub escribir_archivo {
   (my $nombre_archvo, my $ruta, my @texto_a_escribir) = @_;
 
-  open(my $manejador_de_archivo, '>:encoding(UTF-8)', $ruta.$nombre_archvo)
+  open(MANEJADOR, '>:encoding(UTF-8)', $ruta.$nombre_archvo)
     or die "No se pudo abrir el archivo para la grabacion '$ruta.$nombre_archvo'  $!";
 
 
     foreach my $row (@texto_a_escribir)
     {
-      print $manejador_de_archivo join(";",@$row) . "\n";
+      print MANEJADOR join(";",@$row) . "\n";
     }
 
-    close($manejador_de_archivo);
+    close(MANEJADOR);
 }
 
 
@@ -196,7 +195,7 @@ sub tc {
 
     my $suma_total = 0;
 
-    my $suma_total_string = "Suma total ".&extracion_anio(@presupuesto_sancionado[0]->[1]);
+    my $suma_total_string = "Suma total ".&extracion_anio($presupuesto_sancionado[0]->[1]);
 
     foreach my $llave (@llaves) {
 
@@ -225,6 +224,161 @@ sub tc {
     return @presupuesto_sancionado;
 }
 
+sub imprimir_resultado {
+
+  my @resultado = @_;
+
+  foreach my $row (@resultado)
+  {
+    print join(";",@$row) . "\n";
+  }
+
+}
+
+sub listar_archivos {
+
+ ( my $directorio, my $restriccion_nombre_archvo ) = @_;
+
+  my @lista_de_archivos;
+
+  if ( opendir( MANEJADOR , $directorio ) ) {
+
+  @lista_de_archivos = readdir( MANEJADOR );
+
+  closedir( MANEJADOR );
+
+  }
+
+  my @listado;
+
+  foreach my $archivo ( @lista_de_archivos ) {
+    next if ($archivo eq "." || $archivo eq "..");
+
+    if ( -r "$directorio/$archivo" && $archivo =~ m/$restriccion_nombre_archvo/ ) {
+      push @listado, "$directorio/$archivo";
+    }
+  }
+
+  return @listado;
+}
+
+sub dividir_por_provincias {
+  (my @listado_archivos) = @_;
+
+  my %division_por_provincias;
+
+  foreach my $archivo (@listado_archivos) {
+
+    (my $provincia) = $archivo =~ m/ejecutado.+/g;
+
+    $provincia = substr $provincia, 15, 2;
+
+    ($provincia) = $provincia =~ m/^[0-9]+/g;
+
+    if( ! exists $division_por_provincias{$provincia} ) {
+      @{$division_por_provincias{$provincia}} = ();
+    }
+
+    push (@{$division_por_provincias{$provincia}}, $archivo);
+  }
+
+  return %division_por_provincias;
+
+}
+
+sub obtener_codigo_actividad {
+  (my $nombre, my @archivo_actividades)= @_;
+
+  foreach my $row (@archivo_actividades) {
+    if( $nombre eq $row->[3] ) {
+      return $row->[0];
+    }
+  }
+}
+
+sub verificar_codigo_actividad_centro {
+  ( my $codigo_actividad, my $codigo_centro, my @archivo_axc) = @_;
+
+  foreach my $row (@archivo_axc) {
+    if( $codigo_actividad eq $row->[0] && $codigo_centro eq $row->[1] ) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
+sub encontrar_nombre_provincia {
+  (my $codigo_provincia, my @archivo_provincias) = @_;
+
+  foreach my $row (@archivo_provincias) {
+    if( $codigo_provincia eq $row->[0] ) {
+      return $row->[1];
+    }
+  }
+}
+
+sub encontrar_nombre_centro {
+  (my $codigo_centro, my @archivo_centro) = @_;
+
+  foreach my $row (@archivo_centro) {
+    if( $codigo_centro eq $row->[0] ) {
+      return $row->[1];
+    }
+  }
+}
+
+sub listado_presupuesto_ejecutado {
+
+  (my $archivos_ejecutados_provincias, my $centros, my $provincias, my $actividades, my $axc) = @_;
+
+  my %archivos_ejecutados_provincias = %{ $archivos_ejecutados_provincias };
+  my @centros = @{ $centros };
+  my @provincias = @{ $provincias };
+  my @actividades = @{ $actividades };
+  my @axc = @{ $axc };
+
+  foreach my $codigo_provincia (keys(%archivos_ejecutados_provincias)) {
+    print $codigo_provincia;
+    my $nombre_provincia = encontrar_nombre_provincia($codigo_provincia, @provincias);
+
+    my $gasto_total = 0;
+
+    my @archivo_de_resultados;
+
+    foreach my $archivo (@{$archivos_ejecutados_provincias{$codigo_provincia}}) {
+      my @archivo_en_memoria = carga_de_archivos($archivo);
+
+      foreach my $row (@archivo_en_memoria) {
+        push @{$row}, $nombre_provincia;
+
+        my $codigo_actividad = obtener_codigo_actividad($row->[3], @actividades);
+
+        if( &verificar_codigo_actividad_centro($codigo_actividad ,$row->[2], @axc) ){
+          push @{$row}, "";
+        }
+        else {
+          push @{$row}, "Gasto fuera de la planificacion";
+        }
+
+        push @archivo_de_resultados, \@{$row};
+
+        $gasto_total += remover_comas_por_puntos($row->[5]);
+
+      }
+
+
+    }
+
+    my @informe = ("Total gastos $nombre_provincia", $gasto_total);
+
+    push @archivo_de_resultados, \@informe;
+
+    &imprimir_resultado(@archivo_de_resultados);
+
+  }
+}
+
+
 sub main {
   my $comando = $ARGV[0];
 
@@ -234,13 +388,35 @@ sub main {
 
   my %rutas_de_directorios = &inicializar_rutas_de_directorio;
 
-  my @presupuesto_sancionado = &carga_de_archivos($rutas_de_directorios{"DIRMAE"}."/sancionado-", "2016");
+  my @archivos_ejecutados = &listar_archivos($rutas_de_directorios{"DIROK"}, "ejecutado_2016");
 
-  my @texto = &tc(@presupuesto_sancionado);
+  my %archivos_ejecutados_provincias = &dividir_por_provincias(@archivos_ejecutados);
+
+  my @presupuesto_sancionado = &carga_de_archivos($rutas_de_directorios{"DIRMAE"}."/sancionado-2016.csv");
+
+  my @provincias = &carga_de_archivos($rutas_de_directorios{"DIRMAE"}."/provincias.csv");
+
+  my @centros = &carga_de_archivos($rutas_de_directorios{"DIRMAE"}."/centros.csv");
+
+  my @trimestres = &carga_de_archivos($rutas_de_directorios{"DIRMAE"}."/trimestres.csv");
+
+  my @actividades = &carga_de_archivos($rutas_de_directorios{"DIRMAE"}."/actividades.csv");
+  my @axc = &carga_de_archivos($rutas_de_directorios{"DIRMAE"}."/tabla-AxC.csv");
+
+  my @presupuesto_ejecutado = &carga_de_archivos($rutas_de_directorios{"DIROK"}."/ejecutado_2016_1_20151222.csv");
+  #my @texto = &tc(@presupuesto_sancionado);
+  #my @texto = &ct(@presupuesto_sancionado);
+
+  #listado_presupuesto_ejecutado(
+  #  \%archivos_ejecutados_provincias,
+  #  \@centros,
+  #  \@provincias,
+  #  \@actividades,
+  #  \@axc
+  #);
 
   #&escribir_archivo("/ejemplo", ".", @texto);
 
 }
-
 
 &main;
