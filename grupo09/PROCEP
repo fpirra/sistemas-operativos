@@ -53,16 +53,20 @@ function loop {
             linea=$(head -n 1 $DIROK/$archivo)
 
             IFS=';' read -ra valores <<< "$linea"
+#
+#            echo ${valores[0]}
 
-            echo ${valores[0]}
-            echo ${valores[1]}
-            echo ${valores[2]}
-            echo ${valores[3]}
+            # Iteración de registros dentro de cada archivo
+			# 1) Validar formato correcto del archivo (Primer registro)
+			# 1a) Incorrecto: ./MOVEP $DIRREC/$archivo $DIRNOK PROCEP
+			# 1b) Correcto: -> Grabar en log: Archivo a procesar <nombre del archivo>.
 
             if [ ${valores[0]} != "ID_EJE" ] || [ ${valores[1]} != "FECHA_EJE" ] || [ ${valores[2]} != "COD_CEN_EJE" ] ||
                 [ ${valores[3]} != "NOM_ACT_EJE" ] || [ ${valores[4]} !=  "NOM_TRI_EJE" ] || [ ${valores[5]} != "GASTO_EJE" ]; then
 			    log "Estructura inesperada. Se rechaza el archivo $archivo."
 			    ./MOVEP $DIRREC/$archivo $DIRNOK PROCEP
+            else
+                log "Archivo a procesar: $archivo"
             fi
 
 
@@ -75,11 +79,7 @@ function loop {
             #(FDESDE_TRI) y la fecha de fin del trimestre (FHASTA_TRI)
             #Validación de Gasto: el importe de gasto debe ser mayor a cero.
 
-			# Iteración de registros dentro de cada archivo
 
-			# 1) Validar formato correcto del archivo (Primer registro)
-			# 1a) Incorrecto: ./MOVEP $DIRREC/$archivo $DIRNOK PROCEP
-			# 1b) Correcto: -> Grabar en log: Archivo a procesar <nombre del archivo>.
 
 			# 2) Validar los campos
 
