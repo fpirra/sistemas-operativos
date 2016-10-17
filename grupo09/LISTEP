@@ -337,13 +337,14 @@ sub listado_presupuesto_ejecutado {
   my @actividades = @{ $actividades };
   my @axc = @{ $axc };
 
+  my @archivo_de_resultados;
+
+
   foreach my $codigo_provincia (keys(%archivos_ejecutados_provincias)) {
-    print $codigo_provincia;
     my $nombre_provincia = encontrar_nombre_provincia($codigo_provincia, @provincias);
 
     my $gasto_total = 0;
 
-    my @archivo_de_resultados;
 
     foreach my $archivo (@{$archivos_ejecutados_provincias{$codigo_provincia}}) {
       my @archivo_en_memoria = carga_de_archivos($archivo);
@@ -365,17 +366,76 @@ sub listado_presupuesto_ejecutado {
         $gasto_total += remover_comas_por_puntos($row->[5]);
 
       }
-
-
     }
 
     my @informe = ("Total gastos $nombre_provincia", $gasto_total);
 
     push @archivo_de_resultados, \@informe;
 
-    &imprimir_resultado(@archivo_de_resultados);
-
   }
+
+  #&imprimir_resultado(@archivo_de_resultados);
+
+  return @archivo_de_resultados;
+
+}
+
+sub obtener_saldo_trimestre_centro {
+
+  (my $codigo_centro, my $trimestre, my @archivo_saldo) = @_;
+  foreach my $row (@archivo_saldo) {
+    if( $codigo_centro eq $row->[0] && $trimestre eq $row->[1]) {
+      return remover_comas_por_puntos($row->[2]) + remover_comas_por_puntos($row->[3]);
+    }
+  }
+}
+
+
+sub listado_control_presupuesto_ejecutado {
+  (my $archivo_de_resultados, my $archivo_sancionado) = @_;
+
+  my @archivo_de_resultados = @{$archivo_de_resultados};
+  my @archivo_sancionado = @{$archivo_sancionado};
+
+  my @archivo_de_resultados_control_presupuesto = ();
+
+  foreach my $row (@archivo_de_resultados) {
+    if( $row->[0] =~ m/Total gastos/g ){
+    }
+    else {
+      push @archivo_de_resultados_control_presupuesto, $row;
+    }
+  }
+
+  @archivo_de_resultados_control_presupuesto = sort {
+      &comparacion_centro($a->[2]) <=> &comparacion_centro($b->[2])
+      ||
+      &comparacion_trimestre($a->[4]) <=> &comparacion_trimestre($b->[4])
+      ||
+      $a->[1] <=> $b->[1]
+    } @archivo_de_resultados_control_presupuesto;
+
+    my @archivo_de_resultados_control_presupuesto_procesado = ();
+
+    my $codigo_centro;
+    my $trimestre;
+    my $saldo_trimestre;
+    my $saldo_acumulado;
+
+    foreach my $row (@archivo_de_resultados_control_presupuesto) {
+
+      if( $codigo_centro ne $row->[2] || $trimestre ne $row->[4] ){
+        $codigo_centro = $row->[2];
+        $trimestre = $row->[4];
+        $saldo_trimestre = &obtener_saldo_trimestre_centro($codigo_centro, $trimestre, @archivo_sancionado);
+        $saldo_acumulado = $saldo_trimestre;
+        my @encabezado = ($codigo_centro,$trimestre, $saldo_trimestre, $saldo_acumulado);
+        push @archivo_de_resultados_control_presupuesto_procesado, \@encabezado;
+      }
+
+      push @archivo_de_resultados_control_presupuesto_procesado, $row;
+    }
+    imprimir_resultado(@archivo_de_resultados_control_presupuesto_procesado);
 }
 
 
@@ -407,13 +467,17 @@ sub main {
   #my @texto = &tc(@presupuesto_sancionado);
   #my @texto = &ct(@presupuesto_sancionado);
 
-  #listado_presupuesto_ejecutado(
-  #  \%archivos_ejecutados_provincias,
-  #  \@centros,
-  #  \@provincias,
-  #  \@actividades,
-  #  \@axc
-  #);
+  my @archivo_de_resultados = listado_presupuesto_ejecutado(
+    \%archivos_ejecutados_provincias,
+    \@centros,
+    \@provincias,
+    \@actividades,
+    \@axc
+    );
+
+    #&imprimir_resultado(@archivo_de_resultados);
+
+    &listado_control_presupuesto_ejecutado(\@archivo_de_resultados, \@presupuesto_sancionado);
 
   #&escribir_archivo("/ejemplo", ".", @texto);
 
