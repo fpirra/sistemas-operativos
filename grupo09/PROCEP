@@ -57,7 +57,13 @@ function loop {
             leidos=0
             rechazados=0
             aceptados=0
+            primera_linea=true
             while IFS='' read -r linea || [[ -n "$linea" ]]; do
+                # no tengo que leer la línea 1 porque son encabezados
+                if [ $primera_linea = true ]; then
+                    primera_linea=false
+                    continue
+                fi
                 # echo $linea
                 IFS=';' read -ra valores <<< "$linea"
 
@@ -128,7 +134,7 @@ function loop {
                             break
                         fi
                         x=${valores[5]}
-                        echo "$x"
+#                        echo "$x"
                         y="0"
                         resultado=$(awk -vx=$x -vy=$y 'BEGIN{ print x>=y?1:0}')
                         if [ "$resultado" -ne 1 ];then
