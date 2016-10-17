@@ -165,7 +165,9 @@ function loop {
                     fi
 
                     #Validación de Gasto: el importe de gasto debe ser mayor a cero.
-                    if [ ${valores[5]} < 0 ]; then
+                    gasto="${valores[5]}" | bc -l
+                    echo "gasto: $gasto"
+                    if [ gasto < 0 ]; then
                         registro_valido=false
                     fi
 
