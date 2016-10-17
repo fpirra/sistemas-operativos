@@ -110,6 +110,12 @@ function loop {
                     IFS=';' read -ra trimestre <<< "$trimestres"
                     if [ "${valores[4]}" == "${trimestre[1]}" ]; then
                         encontrado=true
+                        corriente_anio=$(date "+%Y")
+
+                        if [ $corriente_anio != ${trimestre[0]} ]; then
+                            formato_valido=false
+                            break
+                        fi
 
                         #Validación de Fecha: la fecha indicada en el registro debe ser una fecha valida;
                         fecha=${valores[1]}
@@ -132,7 +138,6 @@ function loop {
                             break
                         fi
                         hoy=$(date "+%Y%m%d")
-                        corriente_anio=$(date "+%Y")
                         if [ $fecha \> $hoy ]; then
                             formato_valido=false
                             break
