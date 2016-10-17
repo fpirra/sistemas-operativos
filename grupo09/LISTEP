@@ -8,14 +8,24 @@ my %comparacion_trimestre = ("PrimerTrimestre", "1", "SegundoTrimestre", "2", "T
 
 sub mostrar_menu {
   print "Menú de ayuda \n";
+  print "    Requeridos:\n";
+  print "     -a - Año\n";
+  print "    Opcionales:\n";
+  print "     -i - imprimir\n";
   print "   Sancionados: \n";
-  print "     ct - Listar los registros ordenados por código de centro y luego por trimestre\n";
-  print "     tc - Listar los registros ordenados por trimestre y luego por código de centro\n";
+  print "     -ct - Listar los registros ordenados por código de centro y luego por trimestre\n";
+  print "     -tc - Listar los registros ordenados por trimestre y luego por código de centro\n";
   print "   Ejecutados: \n";
-  print "     e - Listar el presupuesto ejecutado para un año presupuestario\n";
+  print "     -e - Listar el presupuesto ejecutado para un año presupuestario\n";
+  print "         -p nombre_provincia;..;..\n";
+  print "     Ejemplo: ./LISTEP -e -p CABA;Buenos Aires;Formosa \n";
   print "   Control: \n";
-  print "     st - Saldo por trimestre\n";
-  print "     sa - Saldo acumulado por año\n";
+  print "     -st - Saldo por trimestre y acumulado por año\n";
+  print "         -c centro;..;.. \n";
+  print "         -t trimestre \n";
+  print "     Ejemplo: ./LISTEP -st -c 0.0.0.1-2-1 \n";
+  print "     Ejemplo: ./LISTEP -st -r 0.0.0.1-* \n";
+  print "     Ejemplo: ./LISTEP -st -t Primer Trimestre 2016 \n";
 }
 
 sub inicializar_rutas_de_directorio {
@@ -424,7 +434,7 @@ sub listado_control_presupuesto_ejecutado {
 
     foreach my $row (@archivo_de_resultados_control_presupuesto) {
 
-      if( $codigo_centro ne $row->[2] || $trimestre ne $row->[4] ){
+      if( $codigo_centro ne $row->[2] ){
         $codigo_centro = $row->[2];
         $trimestre = $row->[4];
         $saldo_trimestre = &obtener_saldo_trimestre_centro($codigo_centro, $trimestre, @archivo_sancionado);
@@ -432,6 +442,24 @@ sub listado_control_presupuesto_ejecutado {
         my @encabezado = ($codigo_centro,$trimestre, $saldo_trimestre, $saldo_acumulado);
         push @archivo_de_resultados_control_presupuesto_procesado, \@encabezado;
       }
+      if( $codigo_centro eq $row->[2] && $trimestre ne $row->[4] ){
+        $trimestre = $row->[4];
+        $saldo_trimestre = &obtener_saldo_trimestre_centro($codigo_centro, $trimestre, @archivo_sancionado);
+        $saldo_acumulado += $saldo_trimestre;
+        my @encabezado = ($codigo_centro,$trimestre, $saldo_trimestre, $saldo_acumulado);
+        push @archivo_de_resultados_control_presupuesto_procesado, \@encabezado;
+      }
+
+      $saldo_trimestre -= remover_comas_por_puntos($row->[5]);
+
+      $saldo_acumulado -= remover_comas_por_puntos($row->[5]);
+
+      if( $saldo_trimestre lt 0 ){
+        $row->[7] = $row->[7]." Presupuesto Excedido";
+      }
+
+      push $row, $saldo_trimestre;
+      push $row, $saldo_acumulado;
 
       push @archivo_de_resultados_control_presupuesto_procesado, $row;
     }
@@ -439,33 +467,84 @@ sub listado_control_presupuesto_ejecutado {
 }
 
 
-sub main {
-  my $comando = $ARGV[0];
+sub filtrar {
+  (my $archivo_de_resultados, my $ingresos_usuario, my $posicion ) = @_;
 
-  if ($comando eq "-help") {
-    &mostrar_menu;
+  my @archivo_de_resultados = @{$archivo_de_resultados};
+  my @ingresos_usuario = @{$ingresos_usuario};
+
+  my @archivo_de_resultados_filtrado;
+
+  for my $row (@archivo_de_resultados) {
+    if( $row->[$posicion] ~~ @ingresos_usuario ) {
+      push @archivo_de_resultados_filtrado, $row;
+    }
   }
 
+  return @archivo_de_resultados_filtrado;
+}
+
+sub filtrar_rango {
+  (my $archivo_de_resultados, my $ingreso_usuario, my $posicion ) = @_;
+
+  my @archivo_de_resultados = @{$archivo_de_resultados};
+
+  my @archivo_de_resultados_filtrado;
+
+  my $valor_a_comparar;
+
+  for my $row (@archivo_de_resultados) {
+    $valor_a_comparar = substr($row->[$posicion],0, length($ingreso_usuario));
+    if( $valor_a_comparar eq $ingreso_usuario ) {
+      push @archivo_de_resultados_filtrado, $row;
+    }
+  }
+
+  return @archivo_de_resultados_filtrado;
+}
+
+sub separar_ingreso_usuario {
+  (my $ingreso_usuario) = @_;
+
+  return split(';', $ingreso_usuario);
+}
+
+sub main {
+
+  my $posicion_primer_comando = 2;
+  my $comando = $ARGV[$posicion_primer_comando];
+  my $imprimir = 0;
+
+  my $anio = $ARGV[1];
+
+  if ( $comando eq "-help" || $anio eq "-help" ) {
+    &mostrar_menu;
+  }
+  elsif ( $comando eq "-i" ) {
+    $imprimir = 1;
+    $posicion_primer_comando += 1;
+    $comando = $ARGV[$posicion_primer_comando];
+  }
+
+  if( !looks_like_number($anio) ){
+    print "Año incorrecto\n";
+    return 0;
+  }
+
+  my $comienzo_nombre_archivos_ejecutados = "ejecutado_$anio";
+  my $nombre_presupuesto_sancionado = "/sancionado-$anio.csv";
+
+  my $segundo_comando = $ARGV[$posicion_primer_comando + 1];
+
   my %rutas_de_directorios = &inicializar_rutas_de_directorio;
-
-  my @archivos_ejecutados = &listar_archivos($rutas_de_directorios{"DIROK"}, "ejecutado_2016");
-
+  my @archivos_ejecutados = &listar_archivos($rutas_de_directorios{"DIROK"}, $comienzo_nombre_archivos_ejecutados);
   my %archivos_ejecutados_provincias = &dividir_por_provincias(@archivos_ejecutados);
-
-  my @presupuesto_sancionado = &carga_de_archivos($rutas_de_directorios{"DIRMAE"}."/sancionado-2016.csv");
-
+  my @presupuesto_sancionado = &carga_de_archivos($rutas_de_directorios{"DIRMAE"}.$nombre_presupuesto_sancionado);
   my @provincias = &carga_de_archivos($rutas_de_directorios{"DIRMAE"}."/provincias.csv");
-
   my @centros = &carga_de_archivos($rutas_de_directorios{"DIRMAE"}."/centros.csv");
-
   my @trimestres = &carga_de_archivos($rutas_de_directorios{"DIRMAE"}."/trimestres.csv");
-
   my @actividades = &carga_de_archivos($rutas_de_directorios{"DIRMAE"}."/actividades.csv");
   my @axc = &carga_de_archivos($rutas_de_directorios{"DIRMAE"}."/tabla-AxC.csv");
-
-  my @presupuesto_ejecutado = &carga_de_archivos($rutas_de_directorios{"DIROK"}."/ejecutado_2016_1_20151222.csv");
-  #my @texto = &tc(@presupuesto_sancionado);
-  #my @texto = &ct(@presupuesto_sancionado);
 
   my @archivo_de_resultados = listado_presupuesto_ejecutado(
     \%archivos_ejecutados_provincias,
@@ -475,12 +554,39 @@ sub main {
     \@axc
     );
 
-    #&imprimir_resultado(@archivo_de_resultados);
 
-    &listado_control_presupuesto_ejecutado(\@archivo_de_resultados, \@presupuesto_sancionado);
+  my @archivo_a_imprimir;
 
-  #&escribir_archivo("/ejemplo", ".", @texto);
+  if ( $comando eq "-ct" ) {
+    @archivo_a_imprimir = &ct(@presupuesto_sancionado);
+  }
+  elsif ( $comando eq "-tc" ) {
+    @archivo_a_imprimir = &tc(@presupuesto_sancionado);
+  }
+  elsif ( $comando eq "-e" ) {
+    @archivo_a_imprimir = @archivo_de_resultados;
+    if( $segundo_comando eq '-p' ){
+      my @ingresos_usuario = &separar_ingreso_usuario($ARGV[$posicion_primer_comando + 2]);
+      @archivo_a_imprimir = &filtrar(\@archivo_a_imprimir, \@ingresos_usuario, 6);
+    }
+  }
+  elsif ( $comando eq "-st" ) {
+    if( $segundo_comando eq '-c' ){
+      my @ingresos_usuario = &separar_ingreso_usuario($ARGV[$posicion_primer_comando + 2]);
+      @archivo_de_resultados = &filtrar(\@archivo_de_resultados, \@ingresos_usuario, 2);
+    }
+    elsif( $segundo_comando eq '-r' ){
+      my $ingresos_usuario = substr($ARGV[$posicion_primer_comando + 2],0, length($ARGV[$posicion_primer_comando + 2])-1);;
+      @archivo_de_resultados = &filtrar_rango(\@archivo_de_resultados, $ingresos_usuario, 2);
+    }
+    elsif( $segundo_comando eq '-t' ){
+      my @ingresos_usuario = &separar_ingreso_usuario($ARGV[$posicion_primer_comando + 2]);
+      @archivo_de_resultados = &filtrar(\@archivo_de_resultados, \@ingresos_usuario, 4);
+    }
+    @archivo_a_imprimir = &listado_control_presupuesto_ejecutado(\@archivo_de_resultados, \@presupuesto_sancionado);
+  }
 
+  imprimir_resultado(@archivo_a_imprimir);
 }
 
 &main;
