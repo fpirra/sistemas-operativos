@@ -58,12 +58,10 @@ function loop {
             aceptados=0
             while IFS='' read -r linea || [[ -n "$linea" ]]; do
                 # echo $linea
-                registro_valido=true
-
                 IFS=';' read -ra valores <<< "$linea"
 
-                # Validar los campos de cada registro
-
+				# Validar los campos de cada registro
+                registro_valido=true
                 razon=""
 
                 # Validación Centro de Presupuesto: El centro de presupuesto debe existir en el maestro de centros
