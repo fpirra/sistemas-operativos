@@ -1,28 +1,11 @@
-#!/usr/bin/perl
+#!/bin/bash
 
 #Si el ambiente no fue inicializado, no ejecutar
 #Mostrar mensaje adecuado y terminar el programa
-$ENV{'VAR_INITEP'} = true;
-$ENV{'DIRREC'} = 'nov';
 
-if(!defined $ENV{'VAR_INITEP'}) {
-    die "El ambiente no fue inizializado. Ejecute INITEP"
-}
-
-@archivo_para_procesar = glob($ENV{'DIRREC'});
-system("LOGEP", 'Cantidad de archivos a procesar @archivo_para_procesar');
 #Grabar en log
 #Cantidad de archivos a procesar:<cantidad>
 
-
-
-
-opendir my $dir, $ENV{'DIRREC'} or die 'No se encontró el directorio: $!';
-my @files = readdir $dir;
-
-for my $file (@files) {
-
-}
 #ciclar archivos
 
 #ANTES DE PROCESAR UN ARCHIVO, VERIFICAR QUE NO ESTA DUPLICADO
@@ -45,20 +28,21 @@ for my $file (@files) {
 #El archivo rechazado se lo mueve a DIRNOK empleando la función Movep.
 
 
-#VALIDAR LOS CAMPOS DE LA SIGUIENTE FORMA
-#Grabar en log
-#Archivo a procesar <nombre del archivo>.
-#Validación Centro de Presupuesto: El centro de presupuesto debe existir en el maestro de centros
-#Validación de Actividad: La actividad debe existir en el maestro de actividades
-#Validación Trimestre: El trimestre debe existir en la tabla de trimestres y el trimestre debe ser del año
-#presupuestario corriente
-#Validación de Fecha: la fecha indicada en el registro debe ser una fecha valida; menor o igual a la
-#fecha del nombre del archivo y estar comprendida entre la fecha de inicio del trimestre
-#(FDESDE_TRI) y la fecha de fin del trimestre (FHASTA_TRI)
-#Validación de Gasto: el importe de gasto debe ser mayor a cero.
-#NOTA: si detecta otro tipo de error clasificable, puede incluir su validación
-
 #PROCESAR ARCHIVO
+
+    #VALIDAR LOS CAMPOS DE LA SIGUIENTE FORMA
+    #Grabar en log
+    #Archivo a procesar <nombre del archivo>.
+
+    #Validación Centro de Presupuesto: El centro de presupuesto debe existir en el maestro de centros
+    #Validación de Actividad: La actividad debe existir en el maestro de actividades
+    #Validación Trimestre: El trimestre debe existir en la tabla de trimestres y el trimestre debe ser del año
+    #presupuestario corriente
+    #Validación de Fecha: la fecha indicada en el registro debe ser una fecha valida; menor o igual a la
+    #fecha del nombre del archivo y estar comprendida entre la fecha de inicio del trimestre
+    #(FDESDE_TRI) y la fecha de fin del trimestre (FHASTA_TRI)
+    #Validación de Gasto: el importe de gasto debe ser mayor a cero.
+    #NOTA: si detecta otro tipo de error clasificable, puede incluir su validación
 
     #GRABAR REGISTRO RECHAZADO
     #Si el registro NO supera estas validaciones se debe rechazar solo ese registro y grabar en el archivo

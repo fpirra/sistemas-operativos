@@ -42,6 +42,8 @@ function loop {
 				archivo_valido="false"	
 			fi
 
+			echo $archivo
+
 			# Iteración de registros dentro de cada archivo
 
 			# 1) Validar formato correcto del archivo (Primer registro)
