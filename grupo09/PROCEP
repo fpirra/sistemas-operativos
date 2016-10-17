@@ -7,7 +7,7 @@ DIRBIN="$GRUPO"
 DIRMAE="$GRUPO"/mae
 DIRREC="$GRUPO"/nov
 DIROK="$GRUPO"/ok
-DIRPROC="$GRUPO"/imp/proc
+DIRPROC="$GRUPO"/imp
 DIRINFO="$GRUPO"/rep
 DIRLOG="$GRUPO"/log
 DIRNOK="$GRUPO"/nok
@@ -35,131 +35,109 @@ function loop {
 	do
 		for archivo in $(ls $DIROK)
 		do
-			archivo_valido="true"
 			# Validar que no esté dentro de los procesados
-			if [ -f "$DIRPROC/$archivo" ] ; then
-		    log "Archivo Duplicado. Se rechaza el archivo $archivo"
-				archivo_valido="false"	
+			if [ -f "$DIRPROC/proc/$archivo" ] ; then
+		    	log "Archivo Duplicado. Se rechaza el archivo $archivo"
+				continue	
 			fi
 
-			#A efectos de este TP, bastara con verificar el primer registro para determinar si el formato es
-            #correcto.
-            #Si la cantidad de campos del primer registro no se corresponde con el formato establecido, asumir
-            #que el archivo está dañado, rechazar el archivo completo y grabar en el log un mensaje aclaratorio,
-            #como ser:
-            #Estructura inesperada. Se rechaza el archivo <nombre del archivo>.
-            #El archivo rechazado se lo mueve a DIRNOK empleando la función Movep.
-
-            linea=$(head -n 1 $DIROK/$archivo)
-
-            IFS=';' read -ra valores <<< "$linea"
-#
-#            echo ${valores[0]}
-
-            # Iteración de registros dentro de cada archivo
-			# 1) Validar formato correcto del archivo (Primer registro)
-			# 1a) Incorrecto: ./MOVEP $DIRREC/$archivo $DIRNOK PROCEP
-			# 1b) Correcto: -> Grabar en log: Archivo a procesar <nombre del archivo>.
-
-            if [ ${valores[0]} != "ID_EJE" ] || [ ${valores[1]} != "FECHA_EJE" ] || [ ${valores[2]} != "COD_CEN_EJE" ] ||
-                [ ${valores[3]} != "NOM_ACT_EJE" ] || [ ${valores[4]} !=  "NOM_TRI_EJE" ] || [ ${valores[5]} != "GASTO_EJE" ]; then
-			    log "Estructura inesperada. Se rechaza el archivo $archivo."
+			# Verificación del primer registro para asegurar formato de archivo correcto
+            encabezado_valido="ID_EJE;FECHA_EJE;COD_CEN_EJE;NOM_ACT_EJE;NOM_TRI_EJE;GASTO_EJE"			
+            encabezado=$(head -n 1 $DIROK/$archivo)
+			if [ "$encabezado" != "$encabezado_valido" ] ; then
+		    	log "Estructura inesperada. Se rechaza el archivo $archivo."
 			    ./MOVEP $DIROK/$archivo $DIRNOK PROCEP
-            else
-                log "Archivo a procesar: $archivo"
-                leidos=0
-                rechazados=0
-                aceptados=0
-                while IFS='' read -r linea || [[ -n "$linea" ]]; do
-                    echo "Text read from file: $linea"
-                    registro_valido=true
-                    IFS=';' read -ra valores <<< "$linea"
+			    continue	
+			fi
 
-                    # 2) Validar los campos
+            # El archivo es válido, procesar los registros
 
-                    #Validación Centro de Presupuesto: El centro de presupuesto debe existir en el maestro de centros
-                    encontrado=false
-                    while IFS='' read -r centros || [[ -n "$centros" ]]; do
-                        IFS=';' read -ra centro <<< "$centros"
-                        if [ "${valores[2]}" == "${centro[0]}" ]; then
-                            echo "encontrado centro: ${centro[0]}"
-                            encontrado=true
-                            break
-                        fi
-                    done < "$DIRMAE/centros.csv"
+            log "Archivo a procesar: $archivo"
+            leidos=0
+            rechazados=0
+            aceptados=0
+            while IFS='' read -r linea || [[ -n "$linea" ]]; do
+                # echo $linea
+                registro_valido=true
+                IFS=';' read -ra valores <<< "$linea"
 
-                    if [ "$encontrado" = false ]; then
-                        registro_valido=false
-                        echo "no encontre centro: ${valores[2]}"
+                # Validar los campos de cada registro
+
+                #Validación Centro de Presupuesto: El centro de presupuesto debe existir en el maestro de centros
+                razon=""
+
+                encontrado=false
+                while IFS='' read -r centros || [[ -n "$centros" ]]; do
+                    IFS=';' read -ra centro <<< "$centros"
+                    if [ "${valores[2]}" == "${centro[0]}" ]; then
+                        encontrado=true
+                        break
                     fi
+                done < "$DIRMAE/centros.csv"
+
+                if [ "$encontrado" = false ]; then
+                    registro_valido=false
+                    razon="$razon No encontre centro: ${valores[2]}."
+                fi
 
 
-                    #Validación de Actividad: La actividad debe existir en el maestro de actividades
+                #Validación de Actividad: La actividad debe existir en el maestro de actividades
 
-                    encontrado=false
-                    while IFS='' read -r actividades || [[ -n "$actividades" ]]; do
-                        IFS=';' read -ra actividad <<< "$actividades"
-                        if [ "${valores[3]}" == "${actividad[3]}" ]; then
-                            echo "encontrada actividad: ${valores[3]}"
-                            encontrado=true
-                            break
-                        fi
-                    done < "$DIRMAE/actividades.csv"
-
-                    if [ "$encontrado" = false ]; then
-                        registro_valido=false
-                        echo "no encontre actividad: ${valores[3]}"
+                encontrado=false
+                while IFS='' read -r actividades || [[ -n "$actividades" ]]; do
+                    IFS=';' read -ra actividad <<< "$actividades"
+                    if [ "${valores[3]}" == "${actividad[3]}" ]; then
+                        encontrado=true
+                        break
                     fi
-                    #Validación Trimestre: El trimestre debe existir en la tabla de trimestres y el trimestre debe ser del año
-                    #presupuestario corriente
+                done < "$DIRMAE/actividades.csv"
 
-                    encontrado=false
-                    while IFS='' read -r trimestres || [[ -n "$trimestres" ]]; do
-                        IFS=';' read -ra trimestre <<< "$trimestres"
-                        if [ "${valores[4]}" == "${trimestre[1]}" ]; then
-                            echo "encontrado trimestre: ${valores[4]}"
-                            encontrado=true
-                            break
-                        fi
-                    done < "$DIRMAE/trimestres.csv"
+                if [ "$encontrado" = false ]; then
+                    registro_valido=false
+                    razon="$razon No encontre actividad: ${valores[3]}."
+                fi
+                #Validación Trimestre: El trimestre debe existir en la tabla de trimestres y el trimestre debe ser del año
+                #presupuestario corriente
 
-                    if [ "$encontrado" = false ]; then
-                        echo "no encontre trimestre: ${valores[4]}"
-                        registro_valido=false
+                encontrado=false
+                while IFS='' read -r trimestres || [[ -n "$trimestres" ]]; do
+                    IFS=';' read -ra trimestre <<< "$trimestres"
+                    if [ "${valores[4]}" == "${trimestre[1]}" ]; then
+                        encontrado=true
+                        break
                     fi
+                done < "$DIRMAE/trimestres.csv"
 
-                    #Validación de Fecha: la fecha indicada en el registro debe ser una fecha valida; menor o igual a la
-                    #fecha del nombre del archivo y estar comprendida entre la fecha de inicio del trimestre
-                    #(FDESDE_TRI) y la fecha de fin del trimestre (FHASTA_TRI)
+                if [ "$encontrado" = false ]; then
+                    registro_valido=false
+                    razon="$razon No encontre trimestre: ${valores[4]}."
+                fi
 
+                #Validación de Fecha: la fecha indicada en el registro debe ser una fecha valida; menor o igual a la
+                #fecha del nombre del archivo y estar comprendida entre la fecha de inicio del trimestre
+                #(FDESDE_TRI) y la fecha de fin del trimestre (FHASTA_TRI)
 
+            	((leidos++))
+            	# 3) Resultado de REGISTRO
+				if [ "$registro_valido" = true ]; then
+    				# 3a) Grabar registro aceptado en DIRPROC/ejecutado-<año presupuestario>
+                	((aceptados++))
+                else
+                	# 3b) Grabar registro rechazado en DIRPROC/rechazado-<año presupuestario>
+                	((rechazados++))
+                	echo $razon
+                fi
+            done < "$DIROK/$archivo"
+        	
+        	# Mover archivo a procesados
+            #./MOVEP $DIROK/$archivo $DIRPROC/proc PROCEP
 
-                    #Validación de Gasto: el importe de gasto debe ser mayor a cero.
-                    if [ ${valores[5]} < 0 ]; then
-                        registro_valido=false
-                    fi
-
-
-
-                done < "$DIROK/$archivo"
-            fi
-
-
-
-
-
-
-
-			# 3) Resultado de REGISTRO
-			# 3a) Grabar registro aceptado en DIRPROC/ejecutado-<año presupuestario>
-			# 3b) Grabar registro rechazado en DIRPROC/rechazado-<año presupuestario>
+            log "Para el archivo $archivo se totalizó:" "INFO"
+        	log "Cantidad de registros leidos: $leidos" "INFO"
+        	log "Cantidad de registros aceptados: $aceptados" "INFO"
+        	log "Cantidad de registros rechazados: $rechazados" "INFO"
 
 			# Fin iteración
-
-			# 4) Totalizar
-			# 4a) Registros leidos
-			# 4b) Registros rechazados
-			# 4a) Registros aceptados
 
 		done
 		seguir=false
