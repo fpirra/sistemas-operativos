@@ -105,6 +105,7 @@ function loop {
                 #presupuestario corriente
                 encontrado=false
                 formato_valido=true
+                monto_invalido=false
                 while IFS='' read -r trimestres || [[ -n "$trimestres" ]]; do
                     IFS=';' read -ra trimestre <<< "$trimestres"
                     if [ "${valores[4]}" == "${trimestre[1]}" ]; then
@@ -139,6 +140,7 @@ function loop {
                         resultado=$(awk -vx=$x -vy=$y 'BEGIN{ print x>=y?1:0}')
                         if [ "$resultado" -ne 1 ];then
                             formato_valido=false
+                            monto_invalido=true
                             break
                         fi
                         break
@@ -152,7 +154,11 @@ function loop {
 
                 if [ "$formato_valido" = false ]; then
                     registro_valido=false
-                    razon="$razon Fecha invalida: ${valores[1]}"
+                    if [ "$monto_invalido" = true ]; then
+                        razon="$razon Monto invalido: ${valores[5]}"
+                    else
+                        razon="$razon Fecha invalida: ${valores[1]}"
+                    fi
                 fi
 
             	
