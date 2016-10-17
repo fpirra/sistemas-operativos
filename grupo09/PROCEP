@@ -59,6 +59,7 @@ function loop {
             while IFS='' read -r linea || [[ -n "$linea" ]]; do
                 # echo $linea
                 registro_valido=true
+
                 IFS=';' read -ra valores <<< "$linea"
 
                 # Validar los campos de cada registro
@@ -98,6 +99,7 @@ function loop {
                 #Validación Trimestre: El trimestre debe existir en la tabla de trimestres y el trimestre debe ser del año
                 #presupuestario corriente
                 encontrado=false
+                formato_valido=true
                 while IFS='' read -r trimestres || [[ -n "$trimestres" ]]; do
                     IFS=';' read -ra trimestre <<< "$trimestres"
                     if [ "${valores[4]}" == "${trimestre[1]}" ]; then
@@ -111,7 +113,6 @@ function loop {
                         valida=$?
                         if [ "$valida" = true ]; then
                             formato_valido=false
-                            echo "Fecha formato invalida: $fecha"
                             break
                         fi
 						#desde=$(echo ${valores[2]} | sed 's/\([0-9]\{2\}\)\/\([0-9]\{2\}\)\/\([0-9]\{4\}\)/\3\2\1/')
@@ -132,13 +133,13 @@ function loop {
                 done < "$DIRMAE/trimestres.csv"
 
                 if [ "$encontrado" = false ]; then
-                    razon="$razon No encontre trimestre: ${valores[4]}."
                     registro_valido=false
+                    razon="$razon No encontre trimestre: ${valores[4]}."
                 fi
 
                 if [ "$formato_valido" = false ]; then
-                    razon="$razon Fecha invalida: ${valores[1]}"
                     registro_valido=false
+                    razon="$razon Fecha invalida: ${valores[1]}"
                 fi
 
             	
