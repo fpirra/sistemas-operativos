@@ -64,9 +64,12 @@ function loop {
             if [ ${valores[0]} != "ID_EJE" ] || [ ${valores[1]} != "FECHA_EJE" ] || [ ${valores[2]} != "COD_CEN_EJE" ] ||
                 [ ${valores[3]} != "NOM_ACT_EJE" ] || [ ${valores[4]} !=  "NOM_TRI_EJE" ] || [ ${valores[5]} != "GASTO_EJE" ]; then
 			    log "Estructura inesperada. Se rechaza el archivo $archivo."
-			    ./MOVEP $DIRREC/$archivo $DIRNOK PROCEP
+			    ./MOVEP $DIROK/$archivo $DIRNOK PROCEP
             else
                 log "Archivo a procesar: $archivo"
+                while IFS='' read -r linea || [[ -n "$linea" ]]; do
+                    echo "Text read from file: $linea"
+                done < "$DIROK/$archivo"
             fi
 
 
