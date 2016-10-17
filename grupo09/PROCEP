@@ -67,24 +67,88 @@ function loop {
 			    ./MOVEP $DIROK/$archivo $DIRNOK PROCEP
             else
                 log "Archivo a procesar: $archivo"
+                leidos=0
+                rechazados=0
+                aceptados=0
                 while IFS='' read -r linea || [[ -n "$linea" ]]; do
                     echo "Text read from file: $linea"
+                    registro_valido=true
+                    IFS=';' read -ra valores <<< "$linea"
+
+                    # 2) Validar los campos
+
+                    #Validación Centro de Presupuesto: El centro de presupuesto debe existir en el maestro de centros
+                    encontrado=false
+                    while IFS='' read -r centros || [[ -n "$centros" ]]; do
+                        IFS=';' read -ra centro <<< "$centros"
+                        if [ "${valores[2]}" == "${centro[0]}" ]; then
+                            echo "encontrado centro: ${centro[0]}"
+                            encontrado=true
+                            break
+                        fi
+                    done < "$DIRMAE/centros.csv"
+
+                    if [ "$encontrado" = false ]; then
+                        registro_valido=false
+                        echo "no encontre centro: ${valores[2]}"
+                    fi
+
+
+                    #Validación de Actividad: La actividad debe existir en el maestro de actividades
+
+                    encontrado=false
+                    while IFS='' read -r actividades || [[ -n "$actividades" ]]; do
+                        IFS=';' read -ra actividad <<< "$actividades"
+                        if [ "${valores[3]}" == "${actividad[3]}" ]; then
+                            echo "encontrada actividad: ${valores[3]}"
+                            encontrado=true
+                            break
+                        fi
+                    done < "$DIRMAE/actividades.csv"
+
+                    if [ "$encontrado" = false ]; then
+                        registro_valido=false
+                        echo "no encontre actividad: ${valores[3]}"
+                    fi
+                    #Validación Trimestre: El trimestre debe existir en la tabla de trimestres y el trimestre debe ser del año
+                    #presupuestario corriente
+
+                    encontrado=false
+                    while IFS='' read -r trimestres || [[ -n "$trimestres" ]]; do
+                        IFS=';' read -ra trimestre <<< "$trimestres"
+                        if [ "${valores[4]}" == "${trimestre[1]}" ]; then
+                            echo "encontrado trimestre: ${valores[4]}"
+                            encontrado=true
+                            break
+                        fi
+                    done < "$DIRMAE/trimestres.csv"
+
+                    if [ "$encontrado" = false ]; then
+                        echo "no encontre trimestre: ${valores[4]}"
+                        registro_valido=false
+                    fi
+
+                    #Validación de Fecha: la fecha indicada en el registro debe ser una fecha valida; menor o igual a la
+                    #fecha del nombre del archivo y estar comprendida entre la fecha de inicio del trimestre
+                    #(FDESDE_TRI) y la fecha de fin del trimestre (FHASTA_TRI)
+
+
+
+                    #Validación de Gasto: el importe de gasto debe ser mayor a cero.
+                    if [ ${valores[5]} < 0 ]; then
+                        registro_valido=false
+                    fi
+
+
+
                 done < "$DIROK/$archivo"
             fi
 
 
-            #Validación Centro de Presupuesto: El centro de presupuesto debe existir en el maestro de centros
-            #Validación de Actividad: La actividad debe existir en el maestro de actividades
-            #Validación Trimestre: El trimestre debe existir en la tabla de trimestres y el trimestre debe ser del año
-            #presupuestario corriente
-            #Validación de Fecha: la fecha indicada en el registro debe ser una fecha valida; menor o igual a la
-            #fecha del nombre del archivo y estar comprendida entre la fecha de inicio del trimestre
-            #(FDESDE_TRI) y la fecha de fin del trimestre (FHASTA_TRI)
-            #Validación de Gasto: el importe de gasto debe ser mayor a cero.
 
 
 
-			# 2) Validar los campos
+
 
 			# 3) Resultado de REGISTRO
 			# 3a) Grabar registro aceptado en DIRPROC/ejecutado-<año presupuestario>
