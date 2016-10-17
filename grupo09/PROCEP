@@ -42,7 +42,38 @@ function loop {
 				archivo_valido="false"	
 			fi
 
-			echo $archivo
+			#A efectos de este TP, bastara con verificar el primer registro para determinar si el formato es
+            #correcto.
+            #Si la cantidad de campos del primer registro no se corresponde con el formato establecido, asumir
+            #que el archivo está dañado, rechazar el archivo completo y grabar en el log un mensaje aclaratorio,
+            #como ser:
+            #Estructura inesperada. Se rechaza el archivo <nombre del archivo>.
+            #El archivo rechazado se lo mueve a DIRNOK empleando la función Movep.
+
+            linea=$(head -n 1 $DIROK/$archivo)
+
+            IFS=';' read -ra valores <<< "$linea"
+
+            echo ${valores[0]}
+            echo ${valores[1]}
+            echo ${valores[2]}
+            echo ${valores[3]}
+
+            if [ ${valores[0]} != "ID_EJE" ] || [ ${valores[1]} != "FECHA_EJE" ] || [ ${valores[2]} != "COD_CEN_EJE" ] ||
+                [ ${valores[3]} != "NOM_ACT_EJE" ] || [ ${valores[4]} !=  "NOM_TRI_EJE" ] || [ ${valores[5]} != "GASTO_EJE" ]; then
+			    log "Estructura inesperada. Se rechaza el archivo $archivo."
+			    ./MOVEP $DIRREC/$archivo $DIRNOK PROCEP
+            fi
+
+
+            #Validación Centro de Presupuesto: El centro de presupuesto debe existir en el maestro de centros
+            #Validación de Actividad: La actividad debe existir en el maestro de actividades
+            #Validación Trimestre: El trimestre debe existir en la tabla de trimestres y el trimestre debe ser del año
+            #presupuestario corriente
+            #Validación de Fecha: la fecha indicada en el registro debe ser una fecha valida; menor o igual a la
+            #fecha del nombre del archivo y estar comprendida entre la fecha de inicio del trimestre
+            #(FDESDE_TRI) y la fecha de fin del trimestre (FHASTA_TRI)
+            #Validación de Gasto: el importe de gasto debe ser mayor a cero.
 
 			# Iteración de registros dentro de cada archivo
 
