@@ -537,7 +537,7 @@ sub main {
   my $segundo_comando = $ARGV[$posicion_primer_comando + 1];
 
   my %rutas_de_directorios = &inicializar_rutas_de_directorio;
-  my @archivos_ejecutados = &listar_archivos($rutas_de_directorios{"DIROK"}, $comienzo_nombre_archivos_ejecutados);
+  my @archivos_ejecutados = &listar_archivos($rutas_de_directorios{"DIRPROC"}."/proc", $comienzo_nombre_archivos_ejecutados);
   my %archivos_ejecutados_provincias = &dividir_por_provincias(@archivos_ejecutados);
   my @presupuesto_sancionado = &carga_de_archivos($rutas_de_directorios{"DIRMAE"}.$nombre_presupuesto_sancionado);
   my @provincias = &carga_de_archivos($rutas_de_directorios{"DIRMAE"}."/provincias.csv");
