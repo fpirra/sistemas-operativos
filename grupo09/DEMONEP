@@ -89,11 +89,12 @@ function loop {
  				fi
  				hoy=$(date "+%YYYY%mm%dd")
 
- 				echo "**********"
- 				echo "$fecha"
- 				echo "$hoy"
- 				echo "**********"
- 				
+# 				echo "**********"
+# 				echo "$fecha"
+# 				echo "$hoy"
+# 				echo "**********"
+// TODO: Ojo esto no lo pude probar
+
  				if [ "$fecha" \> "$hoy" ]; then
  					formato_valido="false"
  				fi
