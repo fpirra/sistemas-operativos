@@ -57,6 +57,7 @@ function loop {
             leidos=0
             rechazados=0
             aceptados=0
+            
             primera_linea=true
             while IFS='' read -r linea || [[ -n "$linea" ]]; do
                 # no tengo que leer la línea 1 porque son encabezados
@@ -69,13 +70,19 @@ function loop {
 
 				# Validar los campos de cada registro
                 registro_valido=true
-                razon=""
+                registro_razon_rechazado=""
+
+                registro_fecha="${valores[1]}"
+                registro_centro="${valores[2]}"
+                registro_actividad="${valores[3]}"
+                registro_trimestre="${valores[4]}"
+				registro_monto="${valores[5]}"                
 
                 # Validación Centro de Presupuesto: El centro de presupuesto debe existir en el maestro de centros
                 encontrado=false
                 while IFS='' read -r centros || [[ -n "$centros" ]]; do
                     IFS=';' read -ra centro <<< "$centros"
-                    if [ "${valores[2]}" == "${centro[0]}" ]; then
+                    if [ "$registro_centro" == "${centro[0]}" ]; then
                         encontrado=true
                         break
                     fi
@@ -83,14 +90,14 @@ function loop {
 
                 if [ "$encontrado" = false ]; then
                     registro_valido=false
-                    razon="$razon No encontre centro: ${valores[2]}."
+                    registro_razon_rechazado="$registro_razon_rechazado No encontre centro: $registro_centro."
                 fi
 
                 # Validación de Actividad: La actividad debe existir en el maestro de actividades
                 encontrado=false
                 while IFS='' read -r actividades || [[ -n "$actividades" ]]; do
                     IFS=';' read -ra actividad <<< "$actividades"
-                    if [ "${valores[3]}" == "${actividad[3]}" ]; then
+                    if [ "$registro_actividad" == "${actividad[3]}" ]; then
                         encontrado=true
                         break
                     fi
@@ -98,7 +105,7 @@ function loop {
 
                 if [ "$encontrado" = false ]; then
                     registro_valido=false
-                    razon="$razon No encontre actividad: ${valores[3]}."
+                    registro_razon_rechazado="$registro_razon_rechazado No encontre actividad: $registro_actividad."
                 fi
                 
                 #Validación Trimestre: El trimestre debe existir en la tabla de trimestres y el trimestre debe ser del año
@@ -108,7 +115,7 @@ function loop {
                 monto_invalido=false
                 while IFS='' read -r trimestres || [[ -n "$trimestres" ]]; do
                     IFS=';' read -ra trimestre <<< "$trimestres"
-                    if [ "${valores[4]}" == "${trimestre[1]}" ]; then
+                    if [ "$registro_trimestre" == "${trimestre[1]}" ]; then
                         encontrado=true
                         corriente_anio=$(date "+%Y")
 
@@ -118,32 +125,29 @@ function loop {
                         fi
 
                         #Validación de Fecha: la fecha indicada en el registro debe ser una fecha valida;
-                        fecha=${valores[1]}
+                        
                         # Regex compleja. Lo que hago es convertir el formato de aaaammdd a mm/dd/aaaa para poder validar con date
-                        formato_pedido=$(echo $fecha} | sed 's/\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)/\2\/\3\/\1/')
+                        formato_pedido=$(echo $registro_fecha} | sed 's/\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)/\2\/\3\/\1/')
                         date "+%m/%d/%Y" -d $formato_pedido > /dev/null  2>&1
                         valida=$?
-                        anio=${fecha:0:4}
-#                        echo "$anio"
+                        anio=${registro_fecha:0:4}
                         if [ "$valida" = true ]; then
                             formato_valido=false
                             break
                         fi
-						#desde=$(echo ${valores[2]} | sed 's/\([0-9]\{2\}\)\/\([0-9]\{2\}\)\/\([0-9]\{4\}\)/\3\2\1/')
-						#hasta=$(echo ${valores[3]} | sed 's/\([0-9]\{2\}\)\/\([0-9]\{2\}\)\/\([0-9]\{4\}\)/\3\2\1/')
-                        desde=${valores[2]}
-                        hasta=${valores[3]}
-                        if [ "$fecha" \< "$desde" ] || [ "$fecha" = "$hasta" ] || [ "$fecha" \> "$hasta" ]; then
+						desde=${trimestre[2]}
+                        hasta=${trimestre[3]}
+                        
+                        if [ "$registro_fecha" \< "$desde" ] || [ "$registro_fecha" = "$hasta" ] || [ "$registro_fecha" \> "$hasta" ]; then
                             formato_valido=false
                             break
                         fi
                         hoy=$(date "+%Y%m%d")
-                        if [ $fecha \> $hoy ]; then
+                        if [ $registro_fecha \> $hoy ]; then
                             formato_valido=false
                             break
                         fi
-                        x=${valores[5]}
-#                        echo "$x"
+                        x=$registro_monto
                         y="0"
                         resultado=$(awk -vx=$x -vy=$y 'BEGIN{ print x>=y?1:0}')
                         if [ "$resultado" -ne 1 ];then
@@ -157,17 +161,18 @@ function loop {
 
                 if [ "$encontrado" = false ]; then
                     registro_valido=false
-                    razon="$razon No encontre trimestre: ${valores[4]}."
+                    registro_razon_rechazado="$registro_razon_rechazado No encontre trimestre: $registro_trimestre."
                 fi
 
                 if [ "$formato_valido" = false ]; then
                     registro_valido=false
                     if [ "$monto_invalido" = true ]; then
-                        razon="$razon Monto invalido: ${valores[5]}"
+                        registro_razon_rechazado="$registro_razon_rechazado Monto invalido: $registro_monto"
                     else
-                        razon="$razon Fecha invalida: ${valores[1]}"
+                        registro_razon_rechazado="$registro_razon_rechazado Fecha invalida: $registro_fecha"
                     fi
                 fi
+
 
             	
 				# Resultado de REGISTRO
@@ -178,7 +183,7 @@ function loop {
                 else
                 	# 3b) Grabar registro rechazado en DIRPROC/rechazado-<año presupuestario>
                 	((rechazados++))
-                	echo $razon
+                	echo $registro_razon_rechazado
                 fi
             done < "$DIROK/$archivo"
         	
