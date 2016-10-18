@@ -74,6 +74,7 @@ function loop {
                 while IFS='' read -r centros || [[ -n "$centros" ]]; do
                     IFS=';' read -ra centro <<< "$centros"
                     if [ "$registro_centro" == "${centro[0]}" ]; then
+                        nombre_centro="${centro[1]}"
                         encontrado=true
                         break
                     fi
@@ -81,7 +82,7 @@ function loop {
 
                 if [ "$encontrado" = false ]; then
                     registro_valido=false
-                    registro_razon_rechazado+="No encontre centro: $registro_centro."
+                    registro_razon_rechazado+="No se encontró centro: $registro_centro."
                 fi
 
                 # Validación de Actividad: La actividad debe existir en el maestro de actividades
@@ -89,6 +90,7 @@ function loop {
                 while IFS='' read -r actividades || [[ -n "$actividades" ]]; do
                     IFS=';' read -ra actividad <<< "$actividades"
                     if [ "$registro_actividad" == "${actividad[3]}" ]; then
+                        codigo_actividad="${actividad[0]}"
                         encontrado=true
                         break
                     fi
@@ -96,14 +98,25 @@ function loop {
 
                 if [ "$encontrado" = false ]; then
                     registro_valido=false
-                    registro_razon_rechazado+="No encontre actividad: $registro_actividad."
+                    registro_razon_rechazado+="No se encontró actividad: $registro_actividad."
                 fi
                 
+                codigo_provincia=$(echo "$archivo" | cut -d_ -f3)
+				while IFS='' read -r provincias || [[ -n "$provincias" ]]; do
+                    IFS=';' read -ra provincia <<< "$provincias"
+                    if [ "$codigo_provincia" == "${provincia[0]}" ]; then
+                        nombre_provincia="${provincia[1]}"
+                        encontrado=true
+                        break
+                    fi
+                done < "$DIRMAE/provincias.csv"
+				
+
                 #Validación Trimestre: El trimestre debe existir en la tabla de trimestres y el trimestre debe ser del año
                 #presupuestario corriente
                 encontrado=false
                 formato_valido=true
-                monto_invalido=false
+                monto_valido=true
                 while IFS='' read -r trimestres || [[ -n "$trimestres" ]]; do
                     IFS=';' read -ra trimestre <<< "$trimestres"
                     if [ "$registro_trimestre" == "${trimestre[1]}" ]; then
@@ -153,7 +166,7 @@ function loop {
                         # resultado=$(awk -vx=$x -vy=$y 'BEGIN{ print x>=y?1:0}')
                         # if [ "$resultado" -ne 1 ];then
                         #     formato_valido=false
-                        #     monto_invalido=true
+                        #     monto_valido=false
                         #     break
                         # fi
                         break
@@ -162,12 +175,12 @@ function loop {
 
                 if [ "$encontrado" = false ]; then
                     registro_valido=false
-                    registro_razon_rechazado+="No encontre trimestre: $registro_trimestre."
+                    registro_razon_rechazado+="No se encontró trimestre: $registro_trimestre."
                 fi
 
                 if [ "$formato_valido" = false ]; then
                     registro_valido=false
-                    if [ "$monto_invalido" = true ]; then
+                    if [ "$monto_invalido" = false ]; then
                         registro_razon_rechazado+="Monto invalido: $registro_monto"
                     else
                         registro_razon_rechazado+="Fecha invalida: $registro_fecha"
@@ -196,7 +209,7 @@ function loop {
             	if [ "$registro_valido" = true ]; then
     				# 3a) Grabar registro aceptado en DIRPROC/ejecutado-<año presupuestario>
                 	((aceptados++))
-                	echo "$registro_id;$registro_fecha;$registro_centro;$registro_actividad;$registro_trimestre;$registro_monto;$archivo;;;" >> "$archivo_ejecutado_anio"
+                	echo "$registro_id;$registro_fecha;$registro_centro;$registro_actividad;$registro_trimestre;$registro_monto;$archivo;$codigo_actividad;$nombre_provincia;$nombre_centro" >> "$archivo_ejecutado_anio"
                 else
                 	# 3b) Grabar registro rechazado en DIRPROC/rechazado-<año presupuestario>
                 	((rechazados++))
