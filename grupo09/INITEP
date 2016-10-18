@@ -209,8 +209,7 @@ echo
 loguear "Estado del sistema: INICIALIZADO" "INFO"
 echo "Estado del sistema: INICIALIZADO"
 echo
-VAR_INITEP="HECHO" # El ambiente queda inicializado
-
+export VAR_INITEP="HECHO" # El ambiente queda inicializado
 # Iniciar DEMONEP
 opcion=""
 while [ "$opcion" != "Si" ] ; do

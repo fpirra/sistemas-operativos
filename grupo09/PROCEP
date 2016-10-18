@@ -2,7 +2,7 @@
 
 # $1: Mensaje a loguear ; $2: Tipo del mensaje
 function log {
-  echo "$1" "$2"
+#  echo "$1" "$2"
   $DIRBIN/LOGEP PROCEP "$1" "$2"
 }
 
@@ -145,14 +145,14 @@ function loop {
                             formato_valido=false
                             break
                         fi
-                        # x=$registro_monto
-                        # y="0"
-                        # resultado=$(awk -vx=$x -vy=$y 'BEGIN{ print x>=y?1:0}')
-                        # if [ "$resultado" -ne 1 ];then
-                        #     formato_valido=false
-                        #     monto_valido=false
-                        #     break
-                        # fi
+                        x=$registro_monto
+                        y="0"
+                        resultado=$(awk -vx=$x -vy=$y 'BEGIN{ print x>=y?1:0}')
+                        if [ "$resultado" -ne 1 ];then
+                             formato_valido=false
+                             monto_valido=false
+                             break
+                        fi
                         break
                     fi
                 done < "$DIRMAE/trimestres.csv"
@@ -164,7 +164,7 @@ function loop {
 
                 if [ "$formato_valido" = false ]; then
                     registro_valido=false
-                    if [ "$monto_invalido" = false ]; then
+                    if [ "$monto_valido" = false ]; then
                         registro_razon_rechazado+="Monto invalido: $registro_monto"
                     else
                         registro_razon_rechazado+="Fecha invalida: $registro_fecha"
@@ -220,7 +220,7 @@ function loop {
 
 # Verificar si el ambiente ya fue inicializado
 if [ -z "$VAR_INITEP" ] ; then
-	echo "El ambiente no fue inicializado. Para iniciar ejecute INITEP nuevamente."
+	echo "PROCEP: El ambiente no fue inicializado. Para iniciar ejecute INITEP nuevamente."
 else
 	loop
 fi
