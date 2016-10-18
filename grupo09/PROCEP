@@ -1,24 +1,9 @@
 #!/bin/bash
-# test init
-GRUPO="$(pwd -P)" # Obtengo el directorio del script
-cd $GRUPO
-DIRCONF="$GRUPO"/dirconf # Directorio del archivo de configuracion
-DIRBIN="$GRUPO"
-DIRMAE="$GRUPO"/mae
-DIRREC="$GRUPO"/nov
-DIROK="$GRUPO"/ok
-DIRPROC="$GRUPO"/imp
-DIRINFO="$GRUPO"/rep
-DIRLOG="$GRUPO"/log
-DIRNOK="$GRUPO"/nok
-
-VAR_INITEP="true"
-#test end
 
 # $1: Mensaje a loguear ; $2: Tipo del mensaje
 function log {
   echo "$1" "$2"
-  #$DIRBIN/LOGEP PROCEP "$1" "$2"
+  $DIRBIN/LOGEP PROCEP "$1" "$2"
 }
 
 seguir=true
@@ -111,7 +96,6 @@ function loop {
                     fi
                 done < "$DIRMAE/provincias.csv"
 				
-
                 #Validación Trimestre: El trimestre debe existir en la tabla de trimestres y el trimestre debe ser del año
                 #presupuestario corriente
                 encontrado=false
@@ -218,7 +202,7 @@ function loop {
             done < "$DIROK/$archivo"
         	
         	# Mover archivo a procesados
-            #./MOVEP $DIROK/$archivo $DIRPROC/proc PROCEP
+            ./MOVEP $DIROK/$archivo $DIRPROC/proc PROCEP
 
             log "Para el archivo $archivo se totalizó:" "INFO"
         	log "Cantidad de registros leidos: $leidos" "INFO"
