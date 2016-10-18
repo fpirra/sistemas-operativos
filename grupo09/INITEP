@@ -78,7 +78,7 @@ if ! [ -d "$DIRBIN" ] ; then
 else
     # Verificar presencia de ejecutables
     files_dirbin=$(ls "$DIRBIN")
-    files=("LOGEP" "INITEP" "DEMONEP" "MOVEP" "PROCEP", "LISTEP")
+    files=("LOGEP" "INITEP" "DEMONEP" "MOVEP" "PROCEP" "LISTEP")
     for file in ${files[@]} ; do
         if [ `ls -1 | grep $file -c` -ne 1 ]; then
             faltantes_dirbin+=("$file")

@@ -74,26 +74,22 @@ function loop {
  				anio=$(date "+%Y")
  				desde=$(grep "\s*$anio.*Anual" $DIRMAE/trimestres.csv | cut -d';' -f3)
  				hasta=$(grep "\s*$anio.*Anual" $DIRMAE/trimestres.csv | cut -d';' -f4)
- 				fecha= $formato_pedido
+ 				fecha=$fecha
+				desde=$(echo $desde | sed 's/\([0-9]\{2\}\)\/\([0-9]\{2\}\)\/\([0-9]\{4\}\)/\3\2\1/')
+                d=`echo "$desde" | cut -d "/" -f 1`
+                m=`echo "$desde" | cut -d "/" -f 2`
+                y=`echo "$desde" | cut -d "/" -f 3`
+                desde="$y$m$d"
 
-# 				echo "**********"
-# 				echo "$fecha"
-# 				echo "$desde"
-# 				echo "$hasta"
-# 				echo "**********"
-
-# 				desde=$(echo $desde | sed 's/\([0-9]\{2\}\)\/\([0-9]\{2\}\)\/\([0-9]\{4\}\)/\3\2\1/')
-# 				hasta=$(echo $hasta | sed 's/\([0-9]\{2\}\)\/\([0-9]\{2\}\)\/\([0-9]\{4\}\)/\3\2\1/')
+				hasta=$(echo $hasta | sed 's/\([0-9]\{2\}\)\/\([0-9]\{2\}\)\/\([0-9]\{4\}\)/\3\2\1/')
+				d=`echo "$hasta" | cut -d "/" -f 1`
+                m=`echo "$hasta" | cut -d "/" -f 2`
+                y=`echo "$hasta" | cut -d "/" -f 3`
+                hasta="$y$m$d"
  				if [ "$fecha" \< "$desde" ] || [ "$fecha" == "$hasta" ] || [ "$fecha" \> "$hasta" ]; then
  					formato_valido="false"
  				fi
  				hoy=$(date "+%YYYY%mm%dd")
-
-# 				echo "**********"
-# 				echo "$fecha"
-# 				echo "$hoy"
-# 				echo "**********"
-// TODO: Ojo esto no lo pude probar
 
  				if [ "$fecha" \> "$hoy" ]; then
  					formato_valido="false"
