@@ -24,6 +24,7 @@ function loop {
 			# Validar que no esté dentro de los procesados
 			if [ -f "$DIRPROC/proc/$archivo" ] ; then
 		    	log "Archivo Duplicado. Se rechaza el archivo $archivo" "WAR"
+		    	./MOVEP $DIROK/$archivo $DIRNOK PROCEP
 				continue	
 			fi
 
