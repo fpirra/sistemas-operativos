@@ -136,8 +136,24 @@ function loop {
                             break
                         fi
 						desde=${trimestre[2]}
+                        d=`echo "$desde" | cut -d "/" -f 1`
+                        m=`echo "$desde" | cut -d "/" -f 2`
+                        y=`echo "$desde" | cut -d "/" -f 3`
+                        desde="$y$m$d"
+
+
                         hasta=${trimestre[3]}
-                        
+                        d=`echo "$hasta" | cut -d "/" -f 1`
+                        m=`echo "$hasta" | cut -d "/" -f 2`
+                        y=`echo "$hasta" | cut -d "/" -f 3`
+                        hasta="$y$m$d"
+
+#                        echo "*******"
+#                        echo $desde
+#                        echo $hasta
+#                        echo $registro_fecha
+#                        echo "********"
+
                         if [ "$registro_fecha" \< "$desde" ] || [ "$registro_fecha" = "$hasta" ] || [ "$registro_fecha" \> "$hasta" ]; then
                             formato_valido=false
                             break
