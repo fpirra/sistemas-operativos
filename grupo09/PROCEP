@@ -15,12 +15,14 @@ function ctrl_c {
 }
 
 function loop {
-	log "Cantidad de archivos a procesar: $(ls -l $DIROK| wc -l)" "INFO"
+    archivos_a_procesar=$(ls -l $DIROK| wc -l)
+    ((archivos_a_procesar--))
+	log "Cantidad de archivos a procesar: $archivos_a_procesar" "INFO"
 	while ( $seguir )
 	do
 		for archivo in $(ls $DIROK)
 		do
-			archivo_valido="true"
+			archivo_valido=true
 			# Validar que no esté dentro de los procesados
 			if [ -f "$DIRPROC/proc/$archivo" ] ; then
 		    	log "Archivo Duplicado. Se rechaza el archivo $archivo" "WAR"
@@ -33,7 +35,7 @@ function loop {
             leidos=0
             rechazados=0
             aceptados=0
-            
+            primer_registro=true
             primer_linea=true
             while IFS='' read -r linea || [[ -n "$linea" ]]; do
                 # no tengo que leer la línea 1 porque son encabezados
@@ -43,7 +45,14 @@ function loop {
                 fi
                 # echo $linea
                 IFS=';' read -ra valores <<< "$linea"
-
+                if [ $primer_registro = true ] && [ ${#valores[@]} -ne 6 ]; then
+                    ./MOVEP $DIROK/$archivo $DIRNOK PROCEP
+                    archivo_valido=false
+                    log "Estructura inesperada se rechaza: $archivo" "WAR"
+                    break
+                else
+                    primer_registro=false
+                fi
 				# Validar los campos de cada registro
                 registro_valido=true
                 registro_razon_rechazado=""
@@ -147,6 +156,11 @@ function loop {
                             break
                         fi
                         x=$registro_monto
+                        if [ "$x" == "0" ];then
+                             formato_valido=false
+                             monto_valido=false
+                             break
+                        fi
                         y="0"
                         resultado=$(awk -vx=$x -vy=$y 'BEGIN{ print x>=y?1:0}')
                         if [ "$resultado" -ne 1 ];then
@@ -201,7 +215,10 @@ function loop {
                 	echo "$archivo;$registro_razon_rechazado;$linea;user;$hoy" >> "$archivo_rechazado_anio"
                 fi
             done < "$DIROK/$archivo"
-        	
+
+        	if [ $archivo_valido = false ]; then
+        	    continue
+            fi
         	# Mover archivo a procesados
             ./MOVEP $DIROK/$archivo $DIRPROC/proc PROCEP
 
