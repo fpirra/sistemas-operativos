@@ -15,7 +15,7 @@ function ctrl_c {
 }
 
 function loop {
-	log "Cantidad de archivos a procesar: $(ls -l $DIROK| wc -l)" "WAR"
+	log "Cantidad de archivos a procesar: $(ls -l $DIROK| wc -l)" "INFO"
 	while ( $seguir )
 	do
 		for archivo in $(ls $DIROK)
