@@ -7,7 +7,7 @@ DIRBIN="$GRUPO"
 DIRMAE="$GRUPO"/mae
 DIRREC="$GRUPO"/nov
 DIROK="$GRUPO"/ok
-DIRPROC="$GRUPO"/imp/proc
+DIRPROC="$GRUPO"/imp
 DIRINFO="$GRUPO"/rep
 DIRLOG="$GRUPO"/log
 DIRNOK="$GRUPO"/nok
@@ -38,31 +38,21 @@ function loop {
 			archivo_valido="true"
 			# Validar que no esté dentro de los procesados
 			if [ -f "$DIRPROC/proc/$archivo" ] ; then
-		    	log "Archivo Duplicado. Se rechaza el archivo $archivo"
+		    	log "Archivo Duplicado. Se rechaza el archivo $archivo" "WAR"
 				continue	
 			fi
 
-			# Verificación del primer registro para asegurar formato de archivo correcto
-            encabezado_valido="ID_EJE;FECHA_EJE;COD_CEN_EJE;NOM_ACT_EJE;NOM_TRI_EJE;GASTO_EJE"			
-            encabezado=$(head -n 1 $DIROK/$archivo)
-			if [ "$encabezado" != "$encabezado_valido" ] ; then
-		    	log "Estructura inesperada. Se rechaza el archivo $archivo."
-			    ./MOVEP $DIROK/$archivo $DIRNOK PROCEP
-			    continue	
-			fi
-
-            # El archivo es válido, procesar los registros
-
-            log "Archivo a procesar: $archivo"
+			# El archivo es válido, procesar los registros
+            log "Archivo a procesar: $archivo" "INFO"
             leidos=0
             rechazados=0
             aceptados=0
             
-            primera_linea=true
+            primer_linea=true
             while IFS='' read -r linea || [[ -n "$linea" ]]; do
                 # no tengo que leer la línea 1 porque son encabezados
-                if [ $primera_linea = true ]; then
-                    primera_linea=false
+                if [ $primer_linea = true ]; then
+                    primer_linea=false
                     continue
                 fi
                 # echo $linea
@@ -72,6 +62,7 @@ function loop {
                 registro_valido=true
                 registro_razon_rechazado=""
 
+                registro_id="${valores[0]}"
                 registro_fecha="${valores[1]}"
                 registro_centro="${valores[2]}"
                 registro_actividad="${valores[3]}"
@@ -148,12 +139,6 @@ function loop {
                         y=`echo "$hasta" | cut -d "/" -f 3`
                         hasta="$y$m$d"
 
-#                        echo "*******"
-#                        echo $desde
-#                        echo $hasta
-#                        echo $registro_fecha
-#                        echo "********"
-
                         if [ "$registro_fecha" \< "$desde" ] || [ "$registro_fecha" = "$hasta" ] || [ "$registro_fecha" \> "$hasta" ]; then
                             formato_valido=false
                             break
@@ -163,14 +148,14 @@ function loop {
                             formato_valido=false
                             break
                         fi
-                        x=$registro_monto
-                        y="0"
-                        resultado=$(awk -vx=$x -vy=$y 'BEGIN{ print x>=y?1:0}')
-                        if [ "$resultado" -ne 1 ];then
-                            formato_valido=false
-                            monto_invalido=true
-                            break
-                        fi
+                        # x=$registro_monto
+                        # y="0"
+                        # resultado=$(awk -vx=$x -vy=$y 'BEGIN{ print x>=y?1:0}')
+                        # if [ "$resultado" -ne 1 ];then
+                        #     formato_valido=false
+                        #     monto_invalido=true
+                        #     break
+                        # fi
                         break
                     fi
                 done < "$DIRMAE/trimestres.csv"
@@ -190,16 +175,32 @@ function loop {
                 fi
 
 
-            	
+            	# Crear archivo ejecutado anual
+				archivo_ejecutado_anio="$DIRPROC/ejecutado-$corriente_anio"
+				if [ ! -f "$archivo_ejecutado_anio" ] ; then
+			    	archivo_ejecutado_encabezado="id;Fecha;Centro de Presupuesto;Actividad;Trimestre;Gasto;Archivo Origen;COD_ACT;NOM_PROV;NOM_CEN"
+			    	touch "$archivo_ejecutado_anio" 
+    				echo "$archivo_ejecutado_encabezado" >> "$archivo_ejecutado_anio"
+				fi
+
+				# Crear archivo rechazado anual
+				archivo_rechazado_anio="$DIRPROC/rechazado-$corriente_anio"
+				if [ ! -f "$archivo_rechazado_anio" ] ; then
+			    	archivo_rechazado_encabezado="Fuente;Motivo;Registro de Oferta;usuario;fecha"
+			    	touch "$archivo_rechazado_anio" 
+    				echo "$archivo_rechazado_encabezado" >> "$archivo_rechazado_anio"
+				fi
+
 				# Resultado de REGISTRO
             	((leidos++))
             	if [ "$registro_valido" = true ]; then
     				# 3a) Grabar registro aceptado en DIRPROC/ejecutado-<año presupuestario>
                 	((aceptados++))
+                	echo "$registro_id;$registro_fecha;$registro_centro;$registro_actividad;$registro_trimestre;$registro_monto;$archivo;;;" >> "$archivo_ejecutado_anio"
                 else
                 	# 3b) Grabar registro rechazado en DIRPROC/rechazado-<año presupuestario>
                 	((rechazados++))
-                	echo $registro_razon_rechazado
+                	echo "$archivo;$registro_razon_rechazado;$linea;user;$hoy" >> "$archivo_rechazado_anio"
                 fi
             done < "$DIROK/$archivo"
         	
