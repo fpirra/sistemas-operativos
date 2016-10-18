@@ -81,7 +81,7 @@ function loop {
 
                 if [ "$encontrado" = false ]; then
                     registro_valido=false
-                    registro_razon_rechazado="$registro_razon_rechazado No encontre centro: $registro_centro."
+                    registro_razon_rechazado+="No encontre centro: $registro_centro."
                 fi
 
                 # Validación de Actividad: La actividad debe existir en el maestro de actividades
@@ -96,7 +96,7 @@ function loop {
 
                 if [ "$encontrado" = false ]; then
                     registro_valido=false
-                    registro_razon_rechazado="$registro_razon_rechazado No encontre actividad: $registro_actividad."
+                    registro_razon_rechazado+="No encontre actividad: $registro_actividad."
                 fi
                 
                 #Validación Trimestre: El trimestre debe existir en la tabla de trimestres y el trimestre debe ser del año
@@ -162,15 +162,15 @@ function loop {
 
                 if [ "$encontrado" = false ]; then
                     registro_valido=false
-                    registro_razon_rechazado="$registro_razon_rechazado No encontre trimestre: $registro_trimestre."
+                    registro_razon_rechazado+="No encontre trimestre: $registro_trimestre."
                 fi
 
                 if [ "$formato_valido" = false ]; then
                     registro_valido=false
                     if [ "$monto_invalido" = true ]; then
-                        registro_razon_rechazado="$registro_razon_rechazado Monto invalido: $registro_monto"
+                        registro_razon_rechazado+="Monto invalido: $registro_monto"
                     else
-                        registro_razon_rechazado="$registro_razon_rechazado Fecha invalida: $registro_fecha"
+                        registro_razon_rechazado+="Fecha invalida: $registro_fecha"
                     fi
                 fi
 
