@@ -587,6 +587,11 @@ sub main {
   }
 
   imprimir_resultado(@archivo_a_imprimir);
+
+  if ( $imprimir eq 1 ) {
+    &escribir_archivo("out.csv","../../",@archivo_a_imprimir);
+  }
+
 }
 
 &main;
