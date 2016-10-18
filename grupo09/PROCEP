@@ -1,1 +1,226 @@
-sleep 45
+#!/bin/bash
+
+# $1: Mensaje a loguear ; $2: Tipo del mensaje
+function log {
+  echo "$1" "$2"
+  $DIRBIN/LOGEP PROCEP "$1" "$2"
+}
+
+seguir=true
+trap ctrl_c INT
+
+function ctrl_c {
+	echo "Finalizando..."
+	seguir=false
+}
+
+function loop {
+	log "Cantidad de archivos a procesar: $(ls -l $DIROK| wc -l)" "WAR"
+	while ( $seguir )
+	do
+		for archivo in $(ls $DIROK)
+		do
+			archivo_valido="true"
+			# Validar que no esté dentro de los procesados
+			if [ -f "$DIRPROC/proc/$archivo" ] ; then
+		    	log "Archivo Duplicado. Se rechaza el archivo $archivo" "WAR"
+				continue	
+			fi
+
+			# El archivo es válido, procesar los registros
+            log "Archivo a procesar: $archivo" "INFO"
+            leidos=0
+            rechazados=0
+            aceptados=0
+            
+            primer_linea=true
+            while IFS='' read -r linea || [[ -n "$linea" ]]; do
+                # no tengo que leer la línea 1 porque son encabezados
+                if [ $primer_linea = true ]; then
+                    primer_linea=false
+                    continue
+                fi
+                # echo $linea
+                IFS=';' read -ra valores <<< "$linea"
+
+				# Validar los campos de cada registro
+                registro_valido=true
+                registro_razon_rechazado=""
+
+                registro_id="${valores[0]}"
+                registro_fecha="${valores[1]}"
+                registro_centro="${valores[2]}"
+                registro_actividad="${valores[3]}"
+                registro_trimestre="${valores[4]}"
+				registro_monto="${valores[5]}"                
+
+                # Validación Centro de Presupuesto: El centro de presupuesto debe existir en el maestro de centros
+                encontrado=false
+                while IFS='' read -r centros || [[ -n "$centros" ]]; do
+                    IFS=';' read -ra centro <<< "$centros"
+                    if [ "$registro_centro" == "${centro[0]}" ]; then
+                        nombre_centro="${centro[1]}"
+                        encontrado=true
+                        break
+                    fi
+                done < "$DIRMAE/centros.csv"
+
+                if [ "$encontrado" = false ]; then
+                    registro_valido=false
+                    registro_razon_rechazado+="No se encontró centro: $registro_centro."
+                fi
+
+                # Validación de Actividad: La actividad debe existir en el maestro de actividades
+                encontrado=false
+                while IFS='' read -r actividades || [[ -n "$actividades" ]]; do
+                    IFS=';' read -ra actividad <<< "$actividades"
+                    if [ "$registro_actividad" == "${actividad[3]}" ]; then
+                        codigo_actividad="${actividad[0]}"
+                        encontrado=true
+                        break
+                    fi
+                done < "$DIRMAE/actividades.csv"
+
+                if [ "$encontrado" = false ]; then
+                    registro_valido=false
+                    registro_razon_rechazado+="No se encontró actividad: $registro_actividad."
+                fi
+                
+                codigo_provincia=$(echo "$archivo" | cut -d_ -f3)
+				while IFS='' read -r provincias || [[ -n "$provincias" ]]; do
+                    IFS=';' read -ra provincia <<< "$provincias"
+                    if [ "$codigo_provincia" == "${provincia[0]}" ]; then
+                        nombre_provincia="${provincia[1]}"
+                        encontrado=true
+                        break
+                    fi
+                done < "$DIRMAE/provincias.csv"
+				
+                #Validación Trimestre: El trimestre debe existir en la tabla de trimestres y el trimestre debe ser del año
+                #presupuestario corriente
+                encontrado=false
+                formato_valido=true
+                monto_valido=true
+                while IFS='' read -r trimestres || [[ -n "$trimestres" ]]; do
+                    IFS=';' read -ra trimestre <<< "$trimestres"
+                    if [ "$registro_trimestre" == "${trimestre[1]}" ]; then
+                        encontrado=true
+                        corriente_anio=$(date "+%Y")
+
+                        if [ $corriente_anio != ${trimestre[0]} ]; then
+                            formato_valido=false
+                            break
+                        fi
+
+                        #Validación de Fecha: la fecha indicada en el registro debe ser una fecha valida;
+                        
+                        # Regex compleja. Lo que hago es convertir el formato de aaaammdd a mm/dd/aaaa para poder validar con date
+                        formato_pedido=$(echo $registro_fecha} | sed 's/\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)/\2\/\3\/\1/')
+                        date "+%m/%d/%Y" -d $formato_pedido > /dev/null  2>&1
+                        valida=$?
+                        anio=${registro_fecha:0:4}
+                        if [ "$valida" = true ]; then
+                            formato_valido=false
+                            break
+                        fi
+						desde=${trimestre[2]}
+                        d=`echo "$desde" | cut -d "/" -f 1`
+                        m=`echo "$desde" | cut -d "/" -f 2`
+                        y=`echo "$desde" | cut -d "/" -f 3`
+                        desde="$y$m$d"
+
+
+                        hasta=${trimestre[3]}
+                        d=`echo "$hasta" | cut -d "/" -f 1`
+                        m=`echo "$hasta" | cut -d "/" -f 2`
+                        y=`echo "$hasta" | cut -d "/" -f 3`
+                        hasta="$y$m$d"
+
+                        if [ "$registro_fecha" \< "$desde" ] || [ "$registro_fecha" = "$hasta" ] || [ "$registro_fecha" \> "$hasta" ]; then
+                            formato_valido=false
+                            break
+                        fi
+                        hoy=$(date "+%Y%m%d")
+                        if [ $registro_fecha \> $hoy ]; then
+                            formato_valido=false
+                            break
+                        fi
+                        # x=$registro_monto
+                        # y="0"
+                        # resultado=$(awk -vx=$x -vy=$y 'BEGIN{ print x>=y?1:0}')
+                        # if [ "$resultado" -ne 1 ];then
+                        #     formato_valido=false
+                        #     monto_valido=false
+                        #     break
+                        # fi
+                        break
+                    fi
+                done < "$DIRMAE/trimestres.csv"
+
+                if [ "$encontrado" = false ]; then
+                    registro_valido=false
+                    registro_razon_rechazado+="No se encontró trimestre: $registro_trimestre."
+                fi
+
+                if [ "$formato_valido" = false ]; then
+                    registro_valido=false
+                    if [ "$monto_invalido" = false ]; then
+                        registro_razon_rechazado+="Monto invalido: $registro_monto"
+                    else
+                        registro_razon_rechazado+="Fecha invalida: $registro_fecha"
+                    fi
+                fi
+
+
+            	# Crear archivo ejecutado anual
+				archivo_ejecutado_anio="$DIRPROC/ejecutado-$corriente_anio"
+				if [ ! -f "$archivo_ejecutado_anio" ] ; then
+			    	archivo_ejecutado_encabezado="id;Fecha;Centro de Presupuesto;Actividad;Trimestre;Gasto;Archivo Origen;COD_ACT;NOM_PROV;NOM_CEN"
+			    	touch "$archivo_ejecutado_anio" 
+    				echo "$archivo_ejecutado_encabezado" >> "$archivo_ejecutado_anio"
+				fi
+
+				# Crear archivo rechazado anual
+				archivo_rechazado_anio="$DIRPROC/rechazado-$corriente_anio"
+				if [ ! -f "$archivo_rechazado_anio" ] ; then
+			    	archivo_rechazado_encabezado="Fuente;Motivo;Registro de Oferta;usuario;fecha"
+			    	touch "$archivo_rechazado_anio" 
+    				echo "$archivo_rechazado_encabezado" >> "$archivo_rechazado_anio"
+				fi
+
+				# Resultado de REGISTRO
+            	((leidos++))
+            	if [ "$registro_valido" = true ]; then
+    				# 3a) Grabar registro aceptado en DIRPROC/ejecutado-<año presupuestario>
+                	((aceptados++))
+                	echo "$registro_id;$registro_fecha;$registro_centro;$registro_actividad;$registro_trimestre;$registro_monto;$archivo;$codigo_actividad;$nombre_provincia;$nombre_centro" >> "$archivo_ejecutado_anio"
+                else
+                	# 3b) Grabar registro rechazado en DIRPROC/rechazado-<año presupuestario>
+                	((rechazados++))
+                	echo "$archivo;$registro_razon_rechazado;$linea;user;$hoy" >> "$archivo_rechazado_anio"
+                fi
+            done < "$DIROK/$archivo"
+        	
+        	# Mover archivo a procesados
+            ./MOVEP $DIROK/$archivo $DIRPROC/proc PROCEP
+
+            log "Para el archivo $archivo se totalizó:" "INFO"
+        	log "Cantidad de registros leidos: $leidos" "INFO"
+        	log "Cantidad de registros aceptados: $aceptados" "INFO"
+        	log "Cantidad de registros rechazados: $rechazados" "INFO"
+
+			# Fin iteración
+
+		done
+		seguir=false
+	done
+}
+
+# Cuerpo principal
+
+# Verificar si el ambiente ya fue inicializado
+if [ -z "$VAR_INITEP" ] ; then
+	echo "El ambiente no fue inicializado. Para iniciar ejecute INITEP nuevamente."
+else
+	loop
+fi
