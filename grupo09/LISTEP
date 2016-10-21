@@ -10,22 +10,27 @@ sub mostrar_menu {
   print "Menú de ayuda \n";
   print "    Requeridos:\n";
   print "     -a - Año\n";
+  print "         Para la obtencion del presupuesto sancionado Sancionados: \n";
+  print "           -ct - Listar los registros ordenados por código de centro y luego por trimestre\n";
+  print "           -tc - Listar los registros ordenados por trimestre y luego por código de centro\n";
+  print "         Para la obtención de los presupuestos ejecutados: \n";
+  print "            -e - Listar el presupuesto ejecutado para un año presupuestario\n";
+  print "               Opcionales para el campo: (Solo uno)\n";
+  print "                   -p Permite el filtro por una o mas provincias por nombre\n";
+  print "                   -p nombre_provincia;..;..\n";
+  print "               Ejemplo: ./LISTEP -e -p CABA;Buenos Aires;Formosa \n";
+  print "         Para la obtención del archivo control: \n";
+  print "           -st - Obtiene el saldo por trimestre y acumulado por año\n";
+  print "               Opcionales para el campo: (Solo uno)\n";
+  print "                  Filtrado por centro \n";
+  print "                  -c centro;..;.. \n";
+  print "                  Filtrado por trimestre \n";
+  print "                  -t trimestre \n";
+  print "               Ejemplo: ./LISTEP -st -c 0.0.0.1-2-1 \n";
+  print "               Ejemplo: ./LISTEP -st -r 0.0.0.1-* \n";
+  print "               Ejemplo: ./LISTEP -st -t Primer Trimestre 2016 \n";
   print "    Opcionales:\n";
-  print "     -i - imprimir\n";
-  print "   Sancionados: \n";
-  print "     -ct - Listar los registros ordenados por código de centro y luego por trimestre\n";
-  print "     -tc - Listar los registros ordenados por trimestre y luego por código de centro\n";
-  print "   Ejecutados: \n";
-  print "     -e - Listar el presupuesto ejecutado para un año presupuestario\n";
-  print "         -p nombre_provincia;..;..\n";
-  print "     Ejemplo: ./LISTEP -e -p CABA;Buenos Aires;Formosa \n";
-  print "   Control: \n";
-  print "     -st - Saldo por trimestre y acumulado por año\n";
-  print "         -c centro;..;.. \n";
-  print "         -t trimestre \n";
-  print "     Ejemplo: ./LISTEP -st -c 0.0.0.1-2-1 \n";
-  print "     Ejemplo: ./LISTEP -st -r 0.0.0.1-* \n";
-  print "     Ejemplo: ./LISTEP -st -t Primer Trimestre 2016 \n";
+  print "       -i - imprimir\n";
 }
 
 sub inicializar_rutas_de_directorio {
@@ -384,8 +389,6 @@ sub listado_presupuesto_ejecutado {
 
   }
 
-  #&imprimir_resultado(@archivo_de_resultados);
-
   return @archivo_de_resultados;
 
 }
@@ -509,22 +512,36 @@ sub separar_ingreso_usuario {
   return split(';', $ingreso_usuario);
 }
 
+sub encontrar_posicion_valor_de_comando {
+  my(my $comando, my @array) = @_;
+
+  my $index = 1;
+  foreach my $entrada (@array) {
+    if( $comando eq $entrada ){
+      return $index++;
+    }
+    $index++;
+  }
+}
+
 sub main {
 
-  my $posicion_primer_comando = 2;
-  my $comando = $ARGV[$posicion_primer_comando];
   my $imprimir = 0;
 
-  my $anio = $ARGV[1];
-
-  if ( $comando eq "-help" || $anio eq "-help" ) {
+  if ( "-help" ~~ @ARGV || scalar(@ARGV) eq 0) {
     &mostrar_menu;
+    return;
   }
-  elsif ( $comando eq "-i" ) {
+  elsif ( "-i" ~~ @ARGV ) {
     $imprimir = 1;
-    $posicion_primer_comando += 1;
-    $comando = $ARGV[$posicion_primer_comando];
   }
+
+  my $anio = $ARGV[encontrar_posicion_valor_de_comando('-a', @ARGV)];
+
+  print $anio;
+  print "\n";
+  print "\n";
+  print "\n";
 
   if( !looks_like_number($anio) ){
     print "Año incorrecto\n";
@@ -533,8 +550,6 @@ sub main {
 
   my $comienzo_nombre_archivos_ejecutados = "ejecutado_$anio";
   my $nombre_presupuesto_sancionado = "/sancionado-$anio.csv";
-
-  my $segundo_comando = $ARGV[$posicion_primer_comando + 1];
 
   my %rutas_de_directorios = &inicializar_rutas_de_directorio;
   my @archivos_ejecutados = &listar_archivos($rutas_de_directorios{"DIRPROC"}."/proc", $comienzo_nombre_archivos_ejecutados);
@@ -557,30 +572,30 @@ sub main {
 
   my @archivo_a_imprimir;
 
-  if ( $comando eq "-ct" ) {
+  if ( "-ct" ~~ @ARGV ) {
     @archivo_a_imprimir = &ct(@presupuesto_sancionado);
   }
-  elsif ( $comando eq "-tc" ) {
+  elsif ( "-tc" ~~ @ARGV ) {
     @archivo_a_imprimir = &tc(@presupuesto_sancionado);
   }
-  elsif ( $comando eq "-e" ) {
+  elsif ( "-e" ~~ @ARGV ) {
     @archivo_a_imprimir = @archivo_de_resultados;
-    if( $segundo_comando eq '-p' ){
-      my @ingresos_usuario = &separar_ingreso_usuario($ARGV[$posicion_primer_comando + 2]);
+    if( '-p' ~~ @ARGV ){
+      my @ingresos_usuario = &separar_ingreso_usuario($ARGV[&encontrar_posicion_valor_de_comando('-p', @ARGV)]);
       @archivo_a_imprimir = &filtrar(\@archivo_a_imprimir, \@ingresos_usuario, 6);
     }
   }
-  elsif ( $comando eq "-st" ) {
-    if( $segundo_comando eq '-c' ){
-      my @ingresos_usuario = &separar_ingreso_usuario($ARGV[$posicion_primer_comando + 2]);
+  elsif ( "-st"  ~~ @ARGV ) {
+    if( '-c' ~~ @ARGV ){
+      my @ingresos_usuario = &separar_ingreso_usuario($ARGV[&encontrar_posicion_valor_de_comando('-st', @ARGV)]);
       @archivo_de_resultados = &filtrar(\@archivo_de_resultados, \@ingresos_usuario, 2);
     }
-    elsif( $segundo_comando eq '-r' ){
-      my $ingresos_usuario = substr($ARGV[$posicion_primer_comando + 2],0, length($ARGV[$posicion_primer_comando + 2])-1);;
+    elsif( '-r'  ~~ @ARGV ){
+      my $ingresos_usuario = substr($ARGV[&encontrar_posicion_valor_de_comando('-r', @ARGV)],0, length($ARGV[&encontrar_posicion_valor_de_comando('-p', @ARGV)])-1);
       @archivo_de_resultados = &filtrar_rango(\@archivo_de_resultados, $ingresos_usuario, 2);
     }
-    elsif( $segundo_comando eq '-t' ){
-      my @ingresos_usuario = &separar_ingreso_usuario($ARGV[$posicion_primer_comando + 2]);
+    elsif( '-t'  ~~ @ARGV ){
+      my @ingresos_usuario = &separar_ingreso_usuario($ARGV[&encontrar_posicion_valor_de_comando('-t', @ARGV)]);
       @archivo_de_resultados = &filtrar(\@archivo_de_resultados, \@ingresos_usuario, 4);
     }
     @archivo_a_imprimir = &listado_control_presupuesto_ejecutado(\@archivo_de_resultados, \@presupuesto_sancionado);
