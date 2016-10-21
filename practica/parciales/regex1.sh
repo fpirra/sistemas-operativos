@@ -20,3 +20,19 @@ nombre=$(echo $reg | sed "s/[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:\([^
 votos=$(echo $reg | sed "s/[^:]*:[^:]*:[^:]*:[^:]*:[^:]*:\([^:]*\):.*/\1/")
 echo $nombre-$votos
 
+
+
+#--------------Otra resolucion--------------
+
+
+input=$(grep ".*")
+
+codigo_localidad=$(echo $input | sed "s/\([^ ]*\) .*/\1/")
+
+num_orden=$(echo $input | sed "s/[^ ]*\s*\([^ ]*\).*/\1/")
+
+registro_elegido=$(grep "^$codigo_localidad:[^:]*:[^:]*:[^:]*:$num_orden:.*" "files/Eleccion.Result")
+
+resultado=$(echo $registro_elegido | sed "s/^$codigo_localidad:[^:]*:[^:]*:[^:]*:\([^:]*\)*:\([^:]*\)/\2-\1/")
+
+echo $num_orden
