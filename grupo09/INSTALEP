@@ -179,7 +179,7 @@ if ! [ -f "$DIRCONF"/INSTALEP.conf ] ; then
         echo "NO SE ENCUENTRA PROCEP. Asegurese de que no lo haya movido de lugar o borrado"
         exit 1
     fi
-    mv "$GRUPO"/LISTEP "$DIRBIN"
+    mv "$GRUPO"/PROCEP "$DIRBIN"
     if [ ! -f "$GRUPO/LISTEP" ]; then
         echo "NO SE ENCUENTRA LISTEP. Asegurese de que no lo haya movido de lugar o borrado"
         exit 1

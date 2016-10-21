@@ -1,0 +1,10 @@
+* EPLAM no está adecuadamente inicializado en el sistema. Ejecute INSTALEP. => tiene que decir INITEP
+* Directorios repetidos NO
+* No hace falta explicar en el mensaje del demonep la detención porque está en el README.md
+* No procesan archivos con blancos
+* dpl debe estar vacía al iniciar
+* el año presupuestario empieza el 10 de diciembre del año anterior. El DEMONEP tiene que saber eso, tiene que leer
+  la tabla de trimestres.
+* Validar fecha a futuro de archivo
+
+mover archivos sancionados en la instalacion
