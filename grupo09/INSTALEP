@@ -123,31 +123,46 @@ if ! [ -f "$DIRCONF"/INSTALEP.conf ] ; then
         normalizar_path DIRNOK "$DIRNOK"
 
         a=($DIRBIN $DIRMAE $DIRREC $DIROK $DIRPROC $DIRINFO $DIRLOG $DIRNOK)
-        hash_=()
+        declare -A hash_
+        #hash_=()
         for dir in "${a[@]}"
         do
-            echo $dir
+            #echo $dir
             key=$(echo "$dir" | sed -r 's/[\/-]//g')
-            echo ${hash_[$key]}
-            if [[ ${hash_[$key]} ]]; then
-                echo "clave $key existe en hash: ${hash_[$key]}"
-                hash_[$key]=$((hash_[$key] + 1))
-            else
-                echo "no existe $key"
-                hash_[$key]=1
-            fi
+            #echo ${hash_[$key]}
+            echo $key
+            hash_["$key"]="$key";
+            #if [[ ${hash_[$key]} ]]; then
+            #    echo "clave $key existe en hash: ${hash_[$key]}"
+            #    hash_[$key]=$((hash_[$key] + 1))
+            #else
+            #    echo "no existe $key"
+            #    hash_[$key]=1
+            #fi
         done
-        echo "${hash_[@]}"
-
-        for i in "${!hash_[@]}"
-        do
-            echo "key  : $i"
-            echo "value: ${hash_[$i]}"
-            if [ ${hash_[$i]} -ne 1 ]; then
-                echo "Directorio $i repetido. Elija nombres distintos por favor"
-                valido="false"
-            fi
-        done
+        #echo "${hash_[@]}"
+        claves=${!hash_[@]}
+        echo $claves
+        size1=$(echo ${!claves[@]} | wc -w)
+        echo claves: $size1
+        size2=$(echo {a[@]} | wc -w)
+        echo a: $size2
+        if [ ${#claves[@]} -ne ${#a[@]} ]; then
+            echo "No son iguales las cantidades"
+            valido="false"
+        else
+            echo "They are equal"
+            valido="true"
+        fi
+        #for i in "${!hash_[@]}"
+        #do
+        #    echo "key  : $i"
+        #    echo "value: ${hash_[$i]}"
+        #    if [ ${hash_[$i]} -ne 1 ]; then
+        #        echo "Directorio $i repetido. Elija nombres distintos por favor"
+        #        valido="false"
+        #    fi
+        #done
 
         # Informe de la configuracion elegida
         if [ $valido == "true" ]; then
@@ -161,6 +176,9 @@ if ! [ -f "$DIRCONF"/INSTALEP.conf ] ; then
                     break
                 fi
             done
+        else
+            clear
+            echo "ERROR! No puede especificar la misma ruta para los directorios. Por favor revise"
         fi
     done
 
