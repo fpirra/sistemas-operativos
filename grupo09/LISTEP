@@ -545,11 +545,6 @@ sub main {
 
   my $anio = $ARGV[encontrar_posicion_valor_de_comando('-a', @ARGV)];
 
-  print $anio;
-  print "\n";
-  print "\n";
-  print "\n";
-
   if( !looks_like_number($anio) ){
     print "Año incorrecto\n";
     return 0;
