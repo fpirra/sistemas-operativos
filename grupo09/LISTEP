@@ -8,7 +8,7 @@ my %comparacion_trimestre = ("PrimerTrimestre", "1", "SegundoTrimestre", "2", "T
 
 sub mostrar_menu {
   print "Menú de ayuda \n";
-  print "    Requeridos:\n";
+  print "    Comandos requeridos:\n";
   print "     -a - Año\n";
   print "         Para la obtencion del presupuesto sancionado Sancionados: \n";
   print "           -ct - Listar los registros ordenados por código de centro y luego por trimestre\n";
@@ -24,6 +24,7 @@ sub mostrar_menu {
   print "               Opcionales para el campo: (Solo uno)\n";
   print "                  Filtrado por centro \n";
   print "                  -c centro;..;.. \n";
+  print "                  -r centros;..;.. \n";
   print "                  Filtrado por trimestre \n";
   print "                  -t trimestre \n";
   print "               Ejemplo: ./LISTEP -st -c 0.0.0.1-2-1 \n";
@@ -243,6 +244,12 @@ sub imprimir_resultado {
 
   my @resultado = @_;
 
+  if (scalar(@resultado) eq 0) {
+    print "No se encontraron resultados.\n";
+    &mostrar_menu();
+    exit;
+    }
+
   foreach my $row (@resultado)
   {
     print join(";",@$row) . "\n";
@@ -383,7 +390,7 @@ sub listado_presupuesto_ejecutado {
       }
     }
 
-    my @informe = ("Total gastos $nombre_provincia", $gasto_total);
+    my @informe = ("Total gastos $nombre_provincia", $gasto_total,'','','','',$nombre_provincia);
 
     push @archivo_de_resultados, \@informe;
 
@@ -466,7 +473,7 @@ sub listado_control_presupuesto_ejecutado {
 
       push @archivo_de_resultados_control_presupuesto_procesado, $row;
     }
-    imprimir_resultado(@archivo_de_resultados_control_presupuesto_procesado);
+    return @archivo_de_resultados_control_presupuesto_procesado;
 }
 
 
@@ -479,7 +486,7 @@ sub filtrar {
   my @archivo_de_resultados_filtrado;
 
   for my $row (@archivo_de_resultados) {
-    if( $row->[$posicion] ~~ @ingresos_usuario ) {
+    if( $row->[$posicion] ~~ @ingresos_usuario) {
       push @archivo_de_resultados_filtrado, $row;
     }
   }
