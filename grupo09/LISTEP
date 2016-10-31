@@ -531,6 +531,16 @@ sub encontrar_posicion_valor_de_comando {
   }
 }
 
+
+sub getLoggingTime {
+
+    my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst)=localtime(time);
+    my $nice_timestamp = sprintf ( "%04d%02d%02d %02d:%02d:%02d",
+                                   $year+1900,$mon+1,$mday,$hour,$min,$sec);
+    return $nice_timestamp;
+}
+
+
 sub main {
 
   my $imprimir = 0;
@@ -606,7 +616,7 @@ sub main {
   imprimir_resultado(@archivo_a_imprimir);
 
   if ( $imprimir eq 1 ) {
-    &escribir_archivo("out.csv","../../",@archivo_a_imprimir);
+    &escribir_archivo(&getLoggingTime().".csv","../../",@archivo_a_imprimir);
   }
 
 }
