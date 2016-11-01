@@ -81,7 +81,7 @@ if ! [ -f "$DIRCONF"/INSTALEP.conf ] ; then
 
     opcion_maestra=No
     valido="true"
-    while [ "$opcion_maestra" = "No" ] ||  [ $valido=="false" ] ; do
+    while [ "$opcion_maestra" = "No" ] ||  [ $valido = "false" ] ; do
         obtener_valor DIRBIN "Defina el directorio de instalación de los ejecutables ($DIRBIN): " "$DIRBIN"
         normalizar_path DIRBIN "$DIRBIN"
 
