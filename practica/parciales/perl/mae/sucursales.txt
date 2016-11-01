@@ -1,0 +1,4 @@
+Salta1;201772735430 - El conquistador SRL - barrio rural en Cafayate;Argentina;9.45
+Jujuy1;202772735430 - El perdedor SRL - barrio rural en Jose C Paz;Argentina;9.45
+Rio11;203772735430 - El trolo SRL - fabela en Rio;Brasil;12.45
+Salta2;204772735430 - El capitan SRL - barrio de la fraga;Argentina;9.45
