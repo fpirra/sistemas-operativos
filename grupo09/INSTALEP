@@ -122,53 +122,19 @@ if ! [ -f "$DIRCONF"/INSTALEP.conf ] ; then
         obtener_valor DIRNOK "Defina el directorio de grabación de archivos rechazados ($DIRNOK): " "$DIRNOK"
         normalizar_path DIRNOK "$DIRNOK"
 
-        a=($DIRBIN $DIRMAE $DIRREC $DIROK $DIRPROC $DIRINFO $DIRLOG $DIRNOK)
-        declare -A hash_
-        #hash_=()
-        for dir in "${a[@]}"
-        do
-            #echo $dir
-            key=$(echo "$dir" | sed -r 's/[\/-]//g')
-            #echo ${hash_[$key]}
-            echo $key
-            hash_["$key"]="$key";
-            #if [[ ${hash_[$key]} ]]; then
-            #    echo "clave $key existe en hash: ${hash_[$key]}"
-            #    hash_[$key]=$((hash_[$key] + 1))
-            #else
-            #    echo "no existe $key"
-            #    hash_[$key]=1
-            #fi
-        done
-        #echo "${hash_[@]}"
-        claves=${!hash_[@]}
-        echo $claves
-        size1=$(echo ${!claves[@]} | wc -w)
-        echo claves: $size1
-        size2=$(echo {a[@]} | wc -w)
-        echo a: $size2
-        if [ ${#claves[@]} -ne ${#a[@]} ]; then
-            echo "No son iguales las cantidades"
-            valido="false"
-        else
-            echo "They are equal"
+        declare -a todos=($DIRBIN $DIRMAE $DIRREC $DIROK $DIRPROC $DIRINFO $DIRLOG $DIRNOK)
+        repetidos=$(echo ${todos[@]} | tr ' ' '\n' | sort | uniq -d)
+        if [ $(echo ${repetidos[@]} | wc -w) -eq 0 ]; then
             valido="true"
+        else
+            valido="false"
         fi
-        #for i in "${!hash_[@]}"
-        #do
-        #    echo "key  : $i"
-        #    echo "value: ${hash_[$i]}"
-        #    if [ ${hash_[$i]} -ne 1 ]; then
-        #        echo "Directorio $i repetido. Elija nombres distintos por favor"
-        #        valido="false"
-        #    fi
-        #done
 
         # Informe de la configuracion elegida
         if [ $valido == "true" ]; then
             opcion_maestra=A
             clear
-            while [ "$opcion_maestra" != Si ] ; do
+            while [ "$opcion_maestra" != "Si" ] ; do
                 obtener_valor opcion_maestra "Directorio de ejecutables: $DIRBIN\n\nDirectorio de Maestros y Tablas: $DIRMAE\n\nDirectorio de recepción de archivos de novedades: $DIRREC\n\nEspacio mínimo libre para arribos: $DATASIZE MB\n\nDirectorio de archivos de novedades aceptados: $DIROK\n\nDirectorio de archivos de novedades procesados: $DIRPROC\n\nDirectorio de archivos de reportes de novedades: $DIRINFO\n\nDirectorio de archivos de log: $DIRLOG\n\nDirectorio de archivos rechazados: $DIRNOK\n\nEstado de la instalación: LISTA\n\n¿Desea continuar con la instalación? (Si-No): " Si
                 if [ "$opcion_maestra" = "No" ] ; then
                     # Si elige que no, vuelvo atras y pregunto nuevamente las rutas
@@ -179,6 +145,8 @@ if ! [ -f "$DIRCONF"/INSTALEP.conf ] ; then
         else
             clear
             echo "ERROR! No puede especificar la misma ruta para los directorios. Por favor revise"
+            echo -e "Los siguientes directorios están repetidos: \n"
+            echo $repetidos | tr ' ' '\n' 
         fi
     done
 
@@ -227,12 +195,6 @@ if ! [ -f "$DIRCONF"/INSTALEP.conf ] ; then
         exit 1
     fi
     mv "$GRUPO"/PROCEP "$DIRBIN"
-    if [ ! -f "$GRUPO/LISTEP" ]; then
-        echo "NO SE ENCUENTRA LISTEP. Asegurese de que no lo haya movido de lugar o borrado"
-        exit 1
-    fi
-    mv "$GRUPO"/LISTEP "$DIRBIN"
-
 
 
 
