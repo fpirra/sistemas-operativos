@@ -27,7 +27,7 @@ function loop {
 			if [ -f "$DIRPROC/proc/$archivo" ] ; then
 		    	log "Archivo Duplicado. Se rechaza el archivo $archivo" "WAR"
 		    	./MOVEP $DIROK/$archivo $DIRNOK PROCEP
-				continue	
+				continue
 			fi
 
 			# El archivo es válido, procesar los registros
@@ -62,7 +62,7 @@ function loop {
                 registro_centro="${valores[2]}"
                 registro_actividad="${valores[3]}"
                 registro_trimestre="${valores[4]}"
-				registro_monto="${valores[5]}"                
+				registro_monto="${valores[5]}"
 
                 # Validación Centro de Presupuesto: El centro de presupuesto debe existir en el maestro de centros
                 encontrado=false
@@ -95,7 +95,7 @@ function loop {
                     registro_valido=false
                     registro_razon_rechazado+="No se encontró actividad: $registro_actividad."
                 fi
-                
+
                 codigo_provincia=$(echo "$archivo" | cut -d_ -f3)
 				while IFS='' read -r provincias || [[ -n "$provincias" ]]; do
                     IFS=';' read -ra provincia <<< "$provincias"
@@ -105,7 +105,7 @@ function loop {
                         break
                     fi
                 done < "$DIRMAE/provincias.csv"
-				
+
                 #Validación Trimestre: El trimestre debe existir en la tabla de trimestres y el trimestre debe ser del año
                 #presupuestario corriente
                 encontrado=false
@@ -123,7 +123,7 @@ function loop {
                         fi
 
                         #Validación de Fecha: la fecha indicada en el registro debe ser una fecha valida;
-                        
+
                         # Regex compleja. Lo que hago es convertir el formato de aaaammdd a mm/dd/aaaa para poder validar con date
                         formato_pedido=$(echo $registro_fecha} | sed 's/\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\)/\2\/\3\/\1/')
                         date "+%m/%d/%Y" -d $formato_pedido > /dev/null  2>&1
@@ -161,9 +161,10 @@ function loop {
                              monto_valido=false
                              break
                         fi
-                        y="0"
-                        resultado=$(awk -vx=$x -vy=$y 'BEGIN{ print x>=y?1:0}')
-                        if [ "$resultado" -ne 1 ];then
+                        y=0
+
+                        resultado=$(awk -vx=$x -vy=$y 'BEGIN{ print (x>=y) ? 1:0}')
+                        if [[ $resultado -ne 1 ]];then
                              formato_valido=false
                              monto_valido=false
                              break
@@ -191,7 +192,7 @@ function loop {
 				archivo_ejecutado_anio="$DIRPROC/ejecutado-$corriente_anio"
 				if [ ! -f "$archivo_ejecutado_anio" ] ; then
 			    	archivo_ejecutado_encabezado="id;Fecha;Centro de Presupuesto;Actividad;Trimestre;Gasto;Archivo Origen;COD_ACT;NOM_PROV;NOM_CEN"
-			    	touch "$archivo_ejecutado_anio" 
+			    	touch "$archivo_ejecutado_anio"
     				echo "$archivo_ejecutado_encabezado" >> "$archivo_ejecutado_anio"
 				fi
 
@@ -199,7 +200,7 @@ function loop {
 				archivo_rechazado_anio="$DIRPROC/rechazado-$corriente_anio"
 				if [ ! -f "$archivo_rechazado_anio" ] ; then
 			    	archivo_rechazado_encabezado="Fuente;Motivo;Registro de Oferta;usuario;fecha"
-			    	touch "$archivo_rechazado_anio" 
+			    	touch "$archivo_rechazado_anio"
     				echo "$archivo_rechazado_encabezado" >> "$archivo_rechazado_anio"
 				fi
 
