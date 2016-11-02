@@ -599,7 +599,7 @@ sub main {
   }
   elsif ( "-st"  ~~ @ARGV ) {
     if( '-c' ~~ @ARGV ){
-      my @ingresos_usuario = &separar_ingreso_usuario($ARGV[&encontrar_posicion_valor_de_comando('-st', @ARGV)]);
+      my @ingresos_usuario = &separar_ingreso_usuario($ARGV[&encontrar_posicion_valor_de_comando('-c', @ARGV)]);
       @archivo_de_resultados = &filtrar(\@archivo_de_resultados, \@ingresos_usuario, 2);
     }
     elsif( '-r'  ~~ @ARGV ){
